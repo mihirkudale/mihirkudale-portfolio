@@ -628,7 +628,8 @@ export const Projects = () => {
   return (
     <section
       id="projects"
-      className="min-h-screen py-24 bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-gray-950 text-neutral-900 dark:text-white flex items-center justify-center"
+      className="py-24 bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-gray-950 text-neutral-900 dark:text-white"
+
     >
       <RevealOnScroll>
         <div className="max-w-6xl w-full px-6">
