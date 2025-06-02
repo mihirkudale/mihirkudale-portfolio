@@ -632,7 +632,7 @@ export const Projects = () => {
 
     >
       <RevealOnScroll>
-        <div className="max-w-6xl w-full px-6">
+        <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-screen-xl">
           <h2 className="text-4xl font-bold text-center bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent mb-12 tracking-tight">
             Featured Projects
           </h2>
@@ -679,7 +679,7 @@ export const Projects = () => {
           </div>
 
           {/* Project Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProjects.map((project, index) => (
               <div
                 key={index}

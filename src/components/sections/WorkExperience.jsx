@@ -66,26 +66,26 @@ const experiences = [
       },
     ],
   },
-  {
-    company: "SMC Infrastructures Pvt Ltd",
-    location: "Mumbai, India",
-    roles: [
-      {
-        role: "Engineering Project Co-ordinator Trainee",
-        duration: "Apr 2018 – Mar 2019",
-      },
-    ],
-  },
-  {
-    company: "P.M Kudale & Associates",
-    location: "Pune, India",
-    roles: [
-      {
-        role: "Engineering Project Manager (Self Employed)",
-        duration: "Apr 2015 – July 2017",
-      },
-    ],
-  },
+  // {
+  //   company: "SMC Infrastructures Pvt Ltd",
+  //   location: "Mumbai, India",
+  //   roles: [
+  //     {
+  //       role: "Engineering Project Co-ordinator Trainee",
+  //       duration: "Apr 2018 – Mar 2019",
+  //     },
+  //   ],
+  // },
+  // {
+  //   company: "P.M Kudale & Associates",
+  //   location: "Pune, India",
+  //   roles: [
+  //     {
+  //       role: "Engineering Project Manager (Self Employed)",
+  //       duration: "Apr 2015 – July 2017",
+  //     },
+  //   ],
+  // },
 ];
 
 const WorkExperience = () => {
