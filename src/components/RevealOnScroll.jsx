@@ -4,31 +4,28 @@ export const RevealOnScroll = ({ children }) => {
   const ref = useRef(null);
 
   useEffect(() => {
-    const current = ref.current;
+    const element = ref.current;
 
-    // ✅ Show immediately on very small viewports (e.g. mobile)
-    if (window.innerHeight < 700 && current) {
-      current.classList.add("visible");
+    // ✅ Always reveal on mobile
+    if (window.innerWidth < 768 && element) {
+      element.classList.add("visible");
       return;
     }
 
     const observer = new IntersectionObserver(
-      ([entry], observerInstance) => {
+      ([entry], obs) => {
         if (entry.isIntersecting) {
           entry.target.classList.add("visible");
-          observerInstance.unobserve(entry.target); // animate only once
+          obs.unobserve(entry.target); // only trigger once
         }
       },
-      {
-        threshold: 0.1,
-        rootMargin: "0px",
-      }
+      { threshold: 0.1 }
     );
 
-    if (current) observer.observe(current);
+    if (element) observer.observe(element);
 
     return () => {
-      if (current) observer.unobserve(current);
+      if (element) observer.unobserve(element);
     };
   }, []);
 
