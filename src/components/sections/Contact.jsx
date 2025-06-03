@@ -86,7 +86,7 @@ export const Contact = () => {
           </div>
           {/* Footer Text */}
           <div className="pt-10 border-t border-gray-300 dark:border-gray-700 text-center text-sm text-gray-600 dark:text-gray-400">
-            All rights reserved. © 2025 Designed By <span className="font-medium text-blue-600 dark:text-blue-300">Mihir Kudale</span>
+            All rights reserved. © 2025. Designed by <span className="font-medium text-blue-600 dark:text-blue-300">Mihir Kudale</span>.
           </div>
 
         </div>
