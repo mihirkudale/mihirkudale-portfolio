@@ -446,7 +446,7 @@ const allProjects = [
       "",
   },
   {
-    title: "Campus Placement Preduction",
+    title: "Campus Placement Prediction",
     description:
       "Developed an end-to-end Python ML project for campus placement prediction, leveraging academic records to provide actionable insights and improve placement success rates.",
     stack: ["Python", "Machine Learning"],

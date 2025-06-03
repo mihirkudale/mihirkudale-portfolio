@@ -13,16 +13,16 @@ export const Contact = () => {
           {/* Hire Me Section */}
           <div className="text-center bg-white/60 dark:bg-white/10 backdrop-blur-md border border-blue-100 dark:border-blue-700 rounded-2xl p-10 shadow-lg space-y-6">
             <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent">
-              Hire Me
+              Let’s Work Together
             </h2>
             <p className="text-md text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
-              Looking for a data analyst, data scientist, data engineer, or AI/ML developer who delivers results? Let’s talk. Reach out via email or connect on your preferred platform.
+              Looking for a data analyst, data scientist, data engineer, or AI/ML developer who delivers results? Let’s connect via email or your preferred platform.
             </p>
             <a
-              href="mailto:mihirkudale94@gmail.com?subject=Interested%20in%20Hiring%20You&body=Hi%20Mihir,"
+              href="mailto:mihirkudale94@gmail.com?subject=Opportunity%20to%20Collaborate&body=Hi%20Mihir%2C%0A%0AI came across your portfolio and wanted to connect regarding..."
               className="inline-block bg-blue-700 hover:bg-blue-800 text-white px-8 py-4 rounded-lg font-semibold text-lg shadow-md transition"
             >
-              Send Hire Request
+               Get in Touch
             </a>
           </div>
 
