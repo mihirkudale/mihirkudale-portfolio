@@ -608,6 +608,13 @@ const allProjects = [
     stack: ["Python", "Generative AI"],
     github: "https://github.com/mihirkudale/Source-Code-Analysis",
   },
+  {
+    title: "Microsoft Teams Auto-Reply Chatbot",
+    description:
+      "Built an AI-powered auto-reply chatbot for Microsoft Teams using n8n and OpenAI GPT-4. Configured webhook triggers and message parsing workflows to capture user input in Teams, route messages to GPT-4 via API, and send real-time responses back to the same chat thread. Integrated Microsoft Graph API for seamless Teams communication and automated message handling. Improved response accuracy and reduced support load by enabling 24/7 AI-driven replies in enterprise collaboration channels.",
+    stack: ["Python", "Azure", "Open AI", "n8n", "Generative AI"],
+    github: "",
+  },
 ];
 
 const techFilters = ["Python", "SQL", "Power BI", "Tableau"];

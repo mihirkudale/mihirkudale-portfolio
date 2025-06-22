@@ -21,16 +21,16 @@ export const Home = () => {
               </h1>
 
               {/* Amazon Badge */}
-              {/* <div className="mt-4">
+              <div className="mt-4">
                 <span className="inline-flex items-center gap-2 bg-[#FFF7CC] text-[#A15C00] text-sm font-semibold px-4 py-1 rounded-full shadow-sm">
                   <img
                     src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"
                     alt="Amazon"
                     className="h-5"
                   />
-                  <span className="tracking-tight">Ex-Amazonian</span>
+                  {/* <span className="tracking-tight">Ex-Amazonian</span> */}
                 </span>
-              </div> */}
+              </div>
 
               <p className="mt-6 text-lg text-gray-700 dark:text-gray-300 max-w-2xl leading-relaxed">
                 Data Analyst | Data Scientist | Data Engineer | Ex-Amazon |
