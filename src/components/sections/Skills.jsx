@@ -81,7 +81,7 @@ const categories = [
         { name: "Apache Spark", icon: <SiApachespark className="text-orange-500 text-lg" /> },
         { name: "Apache Hive", icon: <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQV5Nv59h4t2r0eMJiPVN3o3dhc8_DnJoqVwk-LjIajh3YXJ6UUWQnPdFKK9We4nXDCPfQ&usqp=CAU" alt="Apache Hive" className="w-6 h-6" /> },
         { name: "Apache Hadoop", icon: <img src="https://upload.wikimedia.org/wikipedia/commons/0/0e/Hadoop_logo.svg" alt="Apache Hadoop" className="w-6 h-6"/>},
-        { name: "Apache Kafka", icon: <img src="https://static-00.iconduck.com/assets.00/kafka-icon-512x234-uqez3fj8.png" alt="Apache Kafka" className="w-6 h-6"/>},
+        { name: "Apache Kafka", icon: <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTDCsnH-LecjXUO0ujaEgMSALxOVGEf_7KSZA&s" alt="Apache Kafka" className="w-6 h-6" /> },
         { name: "Docker", icon: <FaDocker className="text-blue-500 text-lg" /> },
         { name: "Git", icon: <FaGitAlt className="text-orange-500 text-lg" /> },
     ],

@@ -13,6 +13,7 @@ import WorkExperience from "./components/sections/WorkExperience";
 import Education from "./components/sections/Education";
 import Skills from "./components/sections/Skills";
 import AboutMe from "./components/sections/AboutMe";
+import Chatbot from "./components/Chatbot";
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -42,6 +43,7 @@ function App() {
       <Certifications />
       <Testimonials />
       <Contact />
+      <Chatbot />
 
       {showScrollTop && (
         <button

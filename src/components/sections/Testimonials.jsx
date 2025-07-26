@@ -18,13 +18,6 @@ const testimonials = [
       "I would recommend Mihir in the field of AI, Machine learning and data analytics. He helped me in one of the projects that showed his dedication and knowledge in the field. He would be a valuable employee, possess good knowledge about automation and scripting.",
     avatar: "https://media.licdn.com/dms/image/v2/D4D03AQHdZGANlOVkZA/profile-displayphoto-shrink_800_800/B4DZZuc.P4H4Ag-/0/1745609812054?e=1753920000&v=beta&t=U0m6lInUYKf-Nd6uYq9kd93gOQLz1L9rR29bht1NMJQ",
     linkedin: "https://www.linkedin.com/in/kumarharsh32/"
-  },
-  {
-    name: "Tulika Tiwari",
-    role: "Program Manager at Amazon",
-    quote:
-      "Mihir consistently delivers high-quality work with exceptional attention to detail. His contributions had a direct impact on the success of our project. He is an excellent team player and a proactive problem-solver. Mihir’s data pipelines and dashboards enabled us to unlock powerful, actionable insights.",
-    avatar: "https://media.licdn.com/dms/image/v2/D5603AQGyVMbeE1_0lw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1673671643844?e=1753920000&v=beta&t=ffl1UHV4jrJka8AcOkc8gdNTvZtyT1jcdFxDuQMbGMA",
   }
 ];
 
