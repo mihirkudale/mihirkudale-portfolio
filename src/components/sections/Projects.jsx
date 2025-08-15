@@ -617,10 +617,10 @@ const allProjects = [
   },
 ];
 
-const techFilters = ["Python", "SQL", "Power BI", "Tableau"];
+const techFilters = ["All","Python", "SQL", "Power BI", "Tableau"];
 
 export const Projects = () => {
-  const [activeTech, setActiveTech] = useState("Python");
+  const [activeTech, setActiveTech] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredProjects = allProjects.filter((project) => {

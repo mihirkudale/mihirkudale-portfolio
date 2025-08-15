@@ -12,6 +12,7 @@ export default function Chatbot() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [listening, setListening] = useState(false);
+
   const chatRef = useRef(null);
   const recognitionRef = useRef(null);
 
@@ -23,6 +24,7 @@ export default function Chatbot() {
   };
 
   const sendMessage = async () => {
+    if (loading) return;                    // prevent double-send
     if (!input.trim()) return;
 
     const timestamp = new Date().toLocaleTimeString([], {
@@ -30,30 +32,38 @@ export default function Chatbot() {
       minute: "2-digit",
     });
 
-    const userMsg = { from: "user", text: input, time: timestamp };
+    const userMsg = { from: "user", text: input.trim(), time: timestamp };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/chat", {
+      const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: input }),
+        // send recent history so follow-ups work
+        body: JSON.stringify({
+          query: userMsg.text,
+          history: messages.map(({ from, text }) => ({ from, text })),
+        }),
       });
 
       const data = await res.json();
       const botMsg = {
         from: "bot",
-        text: data.answer || "Hmm... no response.",
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        text: data?.answer || "Hmm... no response.",
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages((prev) => [...prev, botMsg]);
-    } catch {
-      setError("Assistant is offline or unreachable.");
+
+      // surface upstream error text if present
+      if (data?.error) {
+        setError("Assistant degraded response (provider error).");
+        setTimeout(() => setError(null), 4000);
+      }
+    } catch (e) {
+      console.error(e);
+      setError(e?.message || "Assistant is offline or unreachable.");
       setTimeout(() => setError(null), 4000);
     } finally {
       setLoading(false);
@@ -61,7 +71,11 @@ export default function Chatbot() {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") sendMessage();
+    // Enter to send, Shift+Enter for newline
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
   };
 
   const clearChat = () => {
@@ -75,6 +89,7 @@ export default function Chatbot() {
         window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
         setError("Speech recognition not supported.");
+        setTimeout(() => setError(null), 4000);
         return;
       }
 
@@ -91,6 +106,7 @@ export default function Chatbot() {
 
       recognition.onerror = () => {
         setError("Voice input error.");
+        setTimeout(() => setError(null), 4000);
         setListening(false);
       };
 
@@ -107,31 +123,30 @@ export default function Chatbot() {
     }
   };
 
+  // auto-scroll on new messages
   useEffect(() => {
     chatRef.current?.scrollTo(0, chatRef.current.scrollHeight);
   }, [messages]);
 
+  // persist chat
   useEffect(() => {
     localStorage.setItem("chat_messages", JSON.stringify(messages));
   }, [messages]);
 
+  // first-open welcome message
   useEffect(() => {
     if (messages.length === 0 && isOpen) {
       const hand = String.fromCodePoint(0x1f44b);
       const greeting = getTimeGreeting();
       const welcomeText = `${greeting}! ${hand}\n\nI'm Mihir Kudale's AI assistant. Got any questions about him or his work? Feel free to ask — I'm here to help!`;
-
       const welcomeMsg = {
         from: "bot",
         text: welcomeText,
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages([welcomeMsg]);
     }
-  }, [isOpen]);
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>
@@ -214,10 +229,17 @@ export default function Chatbot() {
               placeholder="Ask something..."
               className="flex-1 px-3 py-2 rounded-full text-sm border border-gray-300 focus:outline-none focus:ring focus:ring-blue-200"
             />
-            <button onClick={toggleMic} className={`p-2 rounded-full shadow border ${listening ? "bg-blue-100 border-blue-300" : "bg-white border-gray-200"}`}>
+            <button
+              onClick={toggleMic}
+              className={`p-2 rounded-full shadow border ${listening ? "bg-blue-100 border-blue-300" : "bg-white border-gray-200"}`}
+            >
               <Mic className={`w-4 h-4 ${listening ? "text-blue-600" : "text-gray-500"}`} />
             </button>
-            <button onClick={sendMessage} disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium shadow">
+            <button
+              onClick={sendMessage}
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium shadow disabled:opacity-60"
+            >
               Send
             </button>
           </div>

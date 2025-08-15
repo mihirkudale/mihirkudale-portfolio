@@ -1,25 +1,32 @@
+// src/components/sections/Testimonials.jsx
 import { RevealOnScroll } from "../RevealOnScroll";
-import { FaLinkedin } from "react-icons/fa";
+import { FaLinkedin, FaQuoteLeft } from "react-icons/fa";
 
+// Minimal, modern, avatar-less cards with initials, gradient accents, and cleaner typography.
 const testimonials = [
   {
     name: "Krish Naik",
     role: "Co-founder at iNeuron.ai",
-    // isMentor: true,
     quote:
       "Mihir has been an exceptional learner and has performed remarkably well in the field of data science. From an implementation perspective, he has developed impressive AI use cases using open-source MLOps tools. I look forward to seeing him excel in this domain. Best of luck!",
-    avatar: "https://media.licdn.com/dms/image/v2/D5603AQFkECuBlXDr5A/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1683913490740?e=1753920000&v=beta&t=qQ-f5j7JnW8X6cq4RgZ9fHuW1346Nxj49dodo6PCI8w",
-    linkedin: "https://www.linkedin.com/in/naikkrish/"
+    linkedin: "https://www.linkedin.com/in/naikkrish/",
   },
   {
     name: "Harsh Sinha",
     role: "Data Analyst at Amazon",
     quote:
-      "I would recommend Mihir in the field of AI, Machine learning and data analytics. He helped me in one of the projects that showed his dedication and knowledge in the field. He would be a valuable employee, possess good knowledge about automation and scripting.",
-    avatar: "https://media.licdn.com/dms/image/v2/D4D03AQHdZGANlOVkZA/profile-displayphoto-shrink_800_800/B4DZZuc.P4H4Ag-/0/1745609812054?e=1753920000&v=beta&t=U0m6lInUYKf-Nd6uYq9kd93gOQLz1L9rR29bht1NMJQ",
-    linkedin: "https://www.linkedin.com/in/kumarharsh32/"
-  }
+      "I would recommend Mihir in the field of AI, Machine learning and data analytics. He helped me in one of the projects that showed his dedication and knowledge in the field. He would be a valuable employee, possessing strong skills in automation and scripting.",
+    linkedin: "https://www.linkedin.com/in/kumarharsh32/",
+  },
 ];
+
+const getInitials = (name = "") =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((n) => n[0]?.toUpperCase())
+    .join("");
 
 export const Testimonials = () => {
   return (
@@ -33,43 +40,62 @@ export const Testimonials = () => {
             Testimonials
           </h2>
 
-          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
-            {testimonials.map((testimonial, index) => (
-              <div
-                key={index}
-                className="bg-white/60 dark:bg-white/10 backdrop-blur-md border border-blue-100 dark:border-blue-700 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300"
+          <div className="grid gap-8 sm:gap-10 md:grid-cols-2 lg:grid-cols-3">
+            {testimonials.map((t, i) => (
+              <article
+                key={i}
+                className="group relative overflow-hidden rounded-2xl border border-blue-100/60 dark:border-blue-800/50 bg-white/70 dark:bg-white/10 backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
+                aria-label={`Testimonial by ${t.name}`}
               >
-                <div className="flex items-center gap-4 mb-4">
-                  <img
-                    src={testimonial.avatar}
-                    alt={testimonial.name}
-                    className="w-12 h-12 rounded-full object-cover border border-gray-300 dark:border-gray-600"
+                {/* Gradient accent bar */}
+                <div className="h-1.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600" />
+
+                <div className="p-6">
+                  {/* Subtle background quote icon */}
+                  <FaQuoteLeft
+                    aria-hidden="true"
+                    className="absolute -right-3 -top-1 text-6xl opacity-10 dark:opacity-15 pointer-events-none"
                   />
-                  <div className="flex-1">
-                    <p className="font-semibold text-lg text-gray-900 dark:text-white">{testimonial.name}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {testimonial.role}
-                      {testimonial.isMentor && (
-                        <span className="ml-2 px-2 py-0.5 bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-200 rounded-full text-xs font-medium">
-                          Mentor
-                        </span>
-                      )}
-                    </p>
-                  </div>
-                  {testimonial.linkedin && (
-                    <a
-                      href={testimonial.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 transition"
-                      title="View LinkedIn Profile"
-                    >
-                      <FaLinkedin className="text-xl" />
-                    </a>
-                  )}
+
+                  <header className="mb-4 flex items-center gap-4">
+                    {/* Initials circle replaces avatar */}
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-white font-semibold shadow-sm">
+                      {getInitials(t.name)}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <h3 className="truncate font-semibold text-lg text-gray-900 dark:text-white">
+                        {t.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {t.role}
+                      </p>
+                    </div>
+
+                    {t.linkedin && (
+                      <a
+                        href={t.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center justify-center rounded-full p-2 text-blue-600 transition-transform duration-200 hover:scale-110 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400/60 dark:text-blue-300 dark:hover:text-blue-200"
+                        title="View LinkedIn Profile"
+                        aria-label={`Open ${t.name}'s LinkedIn profile`}
+                      >
+                        <FaLinkedin className="text-xl" />
+                      </a>
+                    )}
+                  </header>
+
+                  <p className="text-base leading-relaxed text-gray-800 dark:text-gray-300 italic">
+                    “{t.quote}”
+                  </p>
                 </div>
-                <p className="text-sm text-gray-800 dark:text-gray-300 italic">“{testimonial.quote}”</p>
-              </div>
+
+                {/* Subtle gradient glow on hover */}
+                <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  <div className="absolute -inset-20 bg-gradient-to-br from-blue-500/0 via-indigo-500/5 to-purple-500/0 blur-2xl" />
+                </div>
+              </article>
             ))}
           </div>
         </div>
@@ -77,3 +103,5 @@ export const Testimonials = () => {
     </section>
   );
 };
+
+export default Testimonials;
