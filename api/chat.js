@@ -1,6 +1,6 @@
 // /api/chat.js  — Vercel Serverless Function (Node)
 
-const PRIMARY_MODEL = "openai/gpt-oss-20b:free";
+const PRIMARY_MODEL = "mistralai/mistral-small-3.2-24b-instruct:free";
 // Enable any paid/alt models you’ve allowed in OpenRouter, then uncomment:
 const FALLBACK_MODELS = [
   // "openai/gpt-4o-mini",
