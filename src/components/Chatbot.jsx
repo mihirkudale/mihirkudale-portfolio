@@ -16,6 +16,33 @@ export default function Chatbot() {
   const chatRef = useRef(null);
   const recognitionRef = useRef(null);
 
+  // Clear messages helper
+  const clearChat = () => {
+    setMessages([]);
+    localStorage.removeItem("chat_messages");
+  };
+
+  // Close widget: stop mic, clear messages, close panel
+  const closeChatbot = () => {
+    try {
+      if (listening && recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    } catch {}
+    clearChat();
+    setIsOpen(false);
+    setListening(false);
+  };
+
+  // Clear messages on page refresh/close
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      localStorage.removeItem("chat_messages");
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
   const getTimeGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "Good morning";
@@ -24,7 +51,7 @@ export default function Chatbot() {
   };
 
   const sendMessage = async () => {
-    if (loading) return;                    // prevent double-send
+    if (loading) return; // prevent double-send
     if (!input.trim()) return;
 
     const timestamp = new Date().toLocaleTimeString([], {
@@ -41,7 +68,6 @@ export default function Chatbot() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // send recent history so follow-ups work
         body: JSON.stringify({
           query: userMsg.text,
           history: messages.map(({ from, text }) => ({ from, text })),
@@ -49,22 +75,32 @@ export default function Chatbot() {
       });
 
       const data = await res.json();
+
+      const bubbleText =
+        (data?.answer && String(data.answer)) ||
+        (data?.error ? `Error: ${data.error}` : "Hmm... no response.");
+
       const botMsg = {
         from: "bot",
-        text: data?.answer || "Hmm... no response.",
+        text: bubbleText,
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages((prev) => [...prev, botMsg]);
 
-      // surface upstream error text if present
       if (data?.error) {
-        setError("Assistant degraded response (provider error).");
+        setError("Assistant returned an upstream error. See the last bubble for details.");
         setTimeout(() => setError(null), 4000);
       }
     } catch (e) {
       console.error(e);
-      setError(e?.message || "Assistant is offline or unreachable.");
-      setTimeout(() => setError(null), 4000);
+      setMessages((prev) => [
+        ...prev,
+        {
+          from: "bot",
+          text: `Network error: ${e?.message || "Assistant is offline or unreachable."}`,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -76,11 +112,6 @@ export default function Chatbot() {
       e.preventDefault();
       sendMessage();
     }
-  };
-
-  const clearChat = () => {
-    setMessages([]);
-    localStorage.removeItem("chat_messages");
   };
 
   const toggleMic = () => {
@@ -123,17 +154,24 @@ export default function Chatbot() {
     }
   };
 
-  // auto-scroll on new messages
+  // Auto-scroll on new messages
   useEffect(() => {
     chatRef.current?.scrollTo(0, chatRef.current.scrollHeight);
   }, [messages]);
 
-  // persist chat
+  // Persist chat while open
   useEffect(() => {
     localStorage.setItem("chat_messages", JSON.stringify(messages));
   }, [messages]);
 
-  // first-open welcome message
+  // Clear messages whenever the widget is closed (e.g., via close button)
+  useEffect(() => {
+    if (!isOpen) {
+      clearChat();
+    }
+  }, [isOpen]);
+
+  // First-open welcome message
   useEffect(() => {
     if (messages.length === 0 && isOpen) {
       const hand = String.fromCodePoint(0x1f44b);
@@ -175,7 +213,7 @@ export default function Chatbot() {
             Mihir Kudale’s AI Assistant
             <div className="flex gap-2">
               <button onClick={clearChat}><Trash2 className="w-4 h-4" /></button>
-              <button onClick={() => setIsOpen(false)}><X className="w-4 h-4" /></button>
+              <button onClick={closeChatbot}><X className="w-4 h-4" /></button>
             </div>
           </div>
 
@@ -232,6 +270,7 @@ export default function Chatbot() {
             <button
               onClick={toggleMic}
               className={`p-2 rounded-full shadow border ${listening ? "bg-blue-100 border-blue-300" : "bg-white border-gray-200"}`}
+              aria-label="Toggle voice input"
             >
               <Mic className={`w-4 h-4 ${listening ? "text-blue-600" : "text-gray-500"}`} />
             </button>
