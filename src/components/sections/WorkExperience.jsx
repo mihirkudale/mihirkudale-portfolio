@@ -43,12 +43,12 @@ const experiences = [
   {
     company: "SMC Infrastructures Pvt Ltd",
     location: "Mumbai, India",
-    roles: [{ role: "Engineering Project Coordinator", start: "2018-04", end: "2019-03", display: "2018 – 2019" }],
+    roles: [{ role: "Project Coordinator", start: "2018-04", end: "2019-03", display: "2018 – 2019" }],
   },
   {
     company: "P.M Kudale & Associates",
     location: "Pune, India",
-    roles: [{ role: "Engineering Project Manager", start: "2015-04", end: "2017-07", display: "2015 – 2017" }],
+    roles: [{ role: "Project Co-ordinator", start: "2015-04", end: "2017-07", display: "2015 – 2017" }],
   },
 ];
 
