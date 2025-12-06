@@ -46,6 +46,11 @@ const experiences = [
     roles: [{ role: "Project Coordinator", start: "2018-04", end: "2019-03", display: "2018 – 2019" }],
   },
   {
+    company: "Destylio Communication and Design LLP",
+    location: "Pune, India",
+    roles: [{ role: "Data Analyst", start: "2017-10", end: "2018-03", display: "2017 – 2018" }],
+  },
+  {
     company: "P.M Kudale & Associates",
     location: "Pune, India",
     roles: [{ role: "Project Co-ordinator", start: "2015-04", end: "2017-07", display: "2015 – 2017" }],
