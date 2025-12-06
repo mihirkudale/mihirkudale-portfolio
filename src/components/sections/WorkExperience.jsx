@@ -7,10 +7,7 @@ const experiences = [
   {
     company: "Integrated Consultancy Services",
     location: "Pune, India",
-    roles: [
-      { role: "Software Developer", start: "2024-08", end: null, display: "Aug 2024 – Present" },
-      { role: "Software Developer Intern", start: "2024-02", end: "2024-07", display: "Feb 2024 – Jul 2024" },
-    ],
+    roles: [{ role: "Software Developer", start: "2024-08", end: "2025-11", display: "Aug 2024 – Nov 2025" }],
   },
   {
     company: "Amazon",
