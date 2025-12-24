@@ -214,8 +214,8 @@ This project is open source and available under the MIT License.
 ## Contact
 
 - **Website:** [mihirkudale.vercel.app](https://mihirkudale.vercel.app/)
-- **GitHub:** [@mihirkudale](https://github.com/mihirkudale)
-- **LinkedIn:** Connect via portfolio site
+- **GitHub:** [mihirkudale](https://github.com/mihirkudale)
+- **LinkedIn:** [mihirkudale](https://www.linkedin.com/in/mihirkudale/) 
 
 ---
 
