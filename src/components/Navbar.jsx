@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 
 export const Navbar = ({ menuOpen, setMenuOpen }) => {
   useEffect(() => {
@@ -6,15 +7,15 @@ export const Navbar = ({ menuOpen, setMenuOpen }) => {
   }, [menuOpen]);
 
   const menuItems = [
-    "home",
-    "about",
-    "skills",
-    "experience",
-    "projects",
-    "education",
-    "certifications",
-    "testimonials",
-    "contact",
+    { label: "home", path: "/" },
+    { label: "about", path: "/about" },
+    { label: "skills", path: "/skills" },
+    { label: "experience", path: "/experience" },
+    { label: "projects", path: "/projects" },
+    { label: "education", path: "/education" },
+    { label: "certifications", path: "/certifications" },
+    { label: "testimonials", path: "/testimonials" },
+    { label: "contact", path: "/contact" },
   ];
 
   return (
@@ -22,14 +23,14 @@ export const Navbar = ({ menuOpen, setMenuOpen }) => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center h-16">
           {/* Brand */}
-          <a href="#home" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <img
-              src="https://i.postimg.cc/gjnbb9xF/80c8c743-9757-4139-b053-b2b33bce6626.png"  
+              src="https://i.postimg.cc/gjnbb9xF/80c8c743-9757-4139-b053-b2b33bce6626.png"
               alt="Mihir Kudale Logo"
               className="h-8 w-auto"
             />
             <span className="sr-only">Mihir Kudale</span>
-          </a>
+          </Link>
 
           {/* Hamburger Menu */}
           <button
@@ -51,13 +52,13 @@ export const Navbar = ({ menuOpen, setMenuOpen }) => {
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center gap-6">
             {menuItems.map((item) => (
-              <a
-                key={item}
-                href={`#${item.replace(/\s+/g, "-")}`}
+              <Link
+                key={item.label}
+                to={item.path}
                 className="capitalize text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-700 dark:hover:text-blue-400 transition duration-200"
               >
-                {item}
-              </a>
+                {item.label}
+              </Link>
             ))}
           </div>
         </div>
@@ -66,14 +67,14 @@ export const Navbar = ({ menuOpen, setMenuOpen }) => {
         {menuOpen && (
           <div className="md:hidden mt-2 flex flex-col gap-4 pb-6">
             {menuItems.map((item) => (
-              <a
-                key={item}
-                href={`#${item.replace(/\s+/g, "-")}`}
+              <Link
+                key={item.label}
+                to={item.path}
                 onClick={() => setMenuOpen(false)}
                 className="capitalize text-base font-medium text-gray-800 dark:text-gray-100 hover:text-blue-700 dark:hover:text-blue-400 transition duration-200"
               >
-                {item}
-              </a>
+                {item.label}
+              </Link>
             ))}
           </div>
         )}

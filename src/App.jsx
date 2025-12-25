@@ -1,5 +1,8 @@
+// App.jsx
 import { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 import { FaArrowUp } from "react-icons/fa";
+
 import "./App.css";
 import "./index.css";
 
@@ -31,17 +34,38 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900 scroll-smooth">
+    <div className="min-h-screen bg-white text-neutral-900">
       <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
-      <Home />
-      <AboutMe />
-      <Skills />
-      <WorkExperience />
-      <Projects />
-      <Education />
-      <Certifications />
-      <Testimonials />
-      <Contact />
+
+      <Routes>
+        {/* Home page (you can keep sections here if you want a long landing page) */}
+        <Route
+          path="/"
+          element={
+            <>
+              <Home />
+              <AboutMe />
+              <Skills />
+              <WorkExperience />
+              <Projects />
+              <Education />
+              <Certifications />
+              <Testimonials />
+              <Contact />
+            </>
+          }
+        />
+
+        {/* Individual routes for each section */}
+        <Route path="/about" element={<AboutMe />} />
+        <Route path="/skills" element={<Skills />} />
+        <Route path="/experience" element={<WorkExperience />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/education" element={<Education />} />
+        <Route path="/certifications" element={<Certifications />} />
+        <Route path="/testimonials" element={<Testimonials />} />
+        <Route path="/contact" element={<Contact />} />
+      </Routes>
 
       {showScrollTop && (
         <button
