@@ -1,97 +1,115 @@
 import { RevealOnScroll } from "../RevealOnScroll";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi";
+import { homeData } from "../../constants/home";
 
 export const Home = () => {
   return (
     <section
       id="home"
-      className="min-h-screen bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-gray-950 text-neutral-900 dark:text-white px-6 md:px-12 py-20 flex items-center justify-center"
+      className="relative min-h-screen overflow-hidden bg-gradient-to-b from-white to-blue-50 dark:from-gray-950 dark:to-gray-900 text-neutral-900 dark:text-white px-6 md:px-12 py-20 flex items-center justify-center"
     >
+      {/* Background Shapes */}
+      <div
+        aria-hidden="true"
+        className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-500/10"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-purple-200/40 blur-3xl dark:bg-purple-500/10"
+      />
+
       <RevealOnScroll>
-        <div className="grid grid-cols-1 md:grid-cols-2 items-center justify-between w-full max-w-7xl gap-y-10 md:gap-x-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 items-center w-full max-w-7xl gap-y-12 md:gap-x-24">
           {/* Left: Intro */}
-          <div className="space-y-6 pl-4 md:pl-20">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold tracking-tight leading-tight text-gray-900 dark:text-white">
-                Hello, I'm{" "}
-                <span className="bg-gradient-to-r from-blue-700 via-indigo-500 to-purple-600 bg-clip-text text-transparent font-extrabold">
-                  Mihir Kudale
-                </span>
-              </h1>
+          <div className="space-y-6 md:pl-10">
+            <p className="text-base font-medium text-gray-700 dark:text-gray-300">
+              {homeData.roles}
+            </p>
 
-              {/* Amazon Badge */}
-              <div className="mt-4">
-                <span className="inline-flex items-center gap-2 bg-[#FFF7CC] text-[#A15C00] text-sm font-semibold px-4 py-1 rounded-full shadow-sm">
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg"
-                    alt="Amazon"
-                    className="h-5"
-                  />
-                  {/* <span className="tracking-tight">Ex-Amazonian</span> */}
-                </span>
-              </div>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight text-gray-900 dark:text-white">
+              Hi, I’m{" "}
+              <span className="bg-gradient-to-r from-blue-700 via-indigo-500 to-purple-600 bg-clip-text text-transparent font-extrabold">
+                {homeData.name}
+              </span>
+            </h1>
 
-              <p className="mt-6 text-lg text-gray-700 dark:text-gray-300 max-w-2xl leading-relaxed">
-                Data Analyst | Data Scientist | Data Engineer | Ex-Amazon |
-                Microsoft Certified (PL-300, DP-100, AI-102) | Driving Business
-                Value through Data Science, AI, Cloud, and Analytics
-              </p>
+            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-xl">
+              {homeData.headline}
+            </p>
+
+            <div className="flex flex-wrap gap-2 pt-1 text-sm text-gray-600 dark:text-gray-300">
+              {homeData.badges.map((badge, index) => (
+                <span
+                  key={index}
+                  className="rounded-full border border-gray-200 bg-white px-3 py-1 shadow-sm dark:border-gray-700 dark:bg-gray-900"
+                >
+                  {badge}
+                </span>
+              ))}
             </div>
 
-            {/* Buttons */}
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 pt-4">
               <a
-                href="#projects"
-                className="bg-blue-800 hover:bg-blue-900 text-white py-3 px-6 rounded-md font-medium transition duration-200 shadow-sm"
+                href={homeData.cta.primary.href}
+                className="inline-flex items-center justify-center rounded-lg bg-blue-800 px-6 py-3 text-white font-semibold shadow-sm transition hover:bg-blue-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70"
               >
-                View Projects
+                {homeData.cta.primary.label}
               </a>
+
               <a
-                href="#contact"
-                className="border border-blue-800 text-blue-800 hover:bg-blue-50 py-3 px-6 rounded-md font-medium transition duration-200 shadow-sm"
+                href={homeData.cta.secondary.href}
+                className="inline-flex items-center justify-center rounded-lg border border-blue-800 px-6 py-3 text-blue-800 font-semibold shadow-sm transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-500/10"
               >
-                Contact Me
+                {homeData.cta.secondary.label}
               </a>
             </div>
 
-            {/* Social Links with Brand Colors */}
-            <div className="flex gap-6 text-xl mt-2">
+            <div className="flex items-center gap-3 pt-3">
               <a
-                href="https://www.linkedin.com/in/mihirkudale/"
+                href={homeData.social.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="LinkedIn"
-                className="text-blue-700 hover:opacity-80 transition"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-blue-700 shadow-sm transition hover:scale-[1.05] hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-white/5"
               >
-                <FaLinkedin />
+                <FaLinkedin className="text-xl" />
               </a>
+
               <a
-                href="https://github.com/mihirkudale"
+                href={homeData.social.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="GitHub"
-                className="text-neutral-900 dark:text-white hover:opacity-80 transition"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-neutral-900 shadow-sm transition hover:scale-[1.05] hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:hover:bg-white/5"
               >
-                <FaGithub />
+                <FaGithub className="text-xl" />
               </a>
+
               <a
-                href="mailto:mihirkudale94@gmail.com"
-                aria-label="Email Mihir Kudale"
-                className="text-[#D14836] hover:opacity-80 transition"
+                href={homeData.social.email}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-[#D14836] shadow-sm transition hover:scale-[1.05] hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-white/5"
               >
-                <HiOutlineMail />
+                <HiOutlineMail className="text-2xl" />
               </a>
             </div>
           </div>
 
-          {/* Right: Profile Image */}
-          <div className="flex justify-center md:justify-end pr-6 md:pr-20">
+          {/* Right: Image */}
+          <div className="relative flex justify-center md:justify-end md:pr-10">
+            <div
+              aria-hidden="true"
+              className="absolute -inset-6 rounded-[2rem] bg-gradient-to-tr from-blue-500/10 to-purple-500/10 blur-2xl"
+            />
+
             <img
-              src="https://i.postimg.cc/Mpbr4dPL/Mihir-photo.jpg"
-              alt="Portrait of Mihir Kudale"
-              className="w-[320px] md:w-[400px] h-auto object-cover rounded-md bg-white border border-gray-100 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
-              loading="lazy"
+              src={homeData.image.src}
+              alt={homeData.image.alt}
+              width={homeData.image.width}
+              height={homeData.image.height}
+              className="relative w-[320px] md:w-[420px] h-auto object-cover rounded-2xl border border-gray-100 shadow-[0_14px_40px_rgba(0,0,0,0.16)] dark:border-gray-800"
+              loading="eager"
+              fetchpriority="high"
+              decoding="async"
+              referrerPolicy="no-referrer"
             />
           </div>
         </div>

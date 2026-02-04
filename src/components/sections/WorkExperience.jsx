@@ -1,7 +1,7 @@
 import React from "react";
 import { RevealOnScroll } from "../RevealOnScroll";
 import { LuBriefcase, LuMapPin, LuBuilding2 } from "react-icons/lu";
-import { experiences } from "../../constants";
+import { experiences } from "../../constants/workexperience";
 
 const WorkExperience = () => {
   return (
