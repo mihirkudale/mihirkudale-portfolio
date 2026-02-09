@@ -9,6 +9,13 @@ body {
   color: #f3f4f6;
 }
 
+/* 2026 optimization: CSS containment for sections (reduces CLS, improves rendering) */
+section {
+  contain: content;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
 @layer utilities {
   @keyframes blink {
     0%,

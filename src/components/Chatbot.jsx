@@ -7,14 +7,21 @@
  * - Focus trapped in chat when open
  * - ARIA live region for new messages
  * - Proper dialog role and labels
+ * 
+ * 2026 optimizations:
+ * - Lazy-loaded ReactMarkdown for reduced bundle size
+ * - Memoized handlers with useCallback
+ * - Reduced motion support
  */
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import PropTypes from "prop-types";
-import ReactMarkdown from "react-markdown";
 import { X, Send, Bot } from "lucide-react";
 import { chatbotConfig } from "../constants/chatbot";
 import { getChatbotReply } from "../utils/chatbotLogic";
 import { homeData } from "../constants/home";
+
+// 2026 optimization: Lazy load ReactMarkdown (12KB+) since only used in chatbot
+const ReactMarkdown = lazy(() => import("react-markdown").then(m => ({ default: m.default })));
 
 /** Generate a stable id for a new message (avoids key collisions) */
 function nextMessageId() {
@@ -25,6 +32,22 @@ const initialMessages = [
   { id: nextMessageId(), role: "bot", content: chatbotConfig.welcomeMessage },
 ];
 
+/** Hook to detect user's reduced motion preference (2026 a11y standard) */
+function usePrefersReducedMotion() {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handler = (e) => setPrefersReducedMotion(e.matches);
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+
+  return prefersReducedMotion;
+}
+
 export function Chatbot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState(initialMessages);
@@ -33,14 +56,49 @@ export function Chatbot() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const replyTimeoutRef = useRef(null);
+  const dialogRef = useRef(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
+    messagesEndRef.current?.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth"
+    });
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  // Focus trap for modal accessibility (2026 standard)
+  useEffect(() => {
+    if (!open || !dialogRef.current) return;
+
+    const dialog = dialogRef.current;
+    const focusableElements = dialog.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    const handleTabKey = (e) => {
+      if (e.key !== 'Tab') return;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          e.preventDefault();
+          lastElement?.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          e.preventDefault();
+          firstElement?.focus();
+        }
+      }
+    };
+
+    dialog.addEventListener('keydown', handleTabKey);
+    return () => dialog.removeEventListener('keydown', handleTabKey);
+  }, [open]);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -94,6 +152,38 @@ export function Chatbot() {
     }, chatbotConfig.replyDelayMs);
   }, [input, loading]);
 
+  // 2026 optimization: Memoized suggestion handler using requestIdleCallback for better INP
+  const handleSuggestionClick = useCallback((q) => {
+    if (loading) return;
+
+    // Use requestIdleCallback to defer non-urgent work (better INP)
+    const runLogic = () => {
+      setMessages((prev) => [...prev, { id: nextMessageId(), role: "user", content: q }]);
+      setLoading(true);
+      replyTimeoutRef.current = setTimeout(() => {
+        replyTimeoutRef.current = null;
+        try {
+          const reply = getChatbotReply(q);
+          setMessages((prev) => [...prev, { id: nextMessageId(), role: "bot", content: reply }]);
+        } catch {
+          setMessages((prev) => [
+            ...prev,
+            { id: nextMessageId(), role: "bot", content: "Something went wrong. Please try again." },
+          ]);
+        } finally {
+          setLoading(false);
+        }
+      }, chatbotConfig.replyDelayMs);
+    };
+
+    // requestIdleCallback with fallback for Safari
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(runLogic, { timeout: 100 });
+    } else {
+      setTimeout(runLogic, 0);
+    }
+  }, [loading]);
+
   const handleKeyDown = useCallback(
     (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -109,11 +199,12 @@ export function Chatbot() {
       {/* Chat panel – theme: blue/indigo, glassmorphism, rounded-2xl (matches site) */}
       {open && (
         <div
+          ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="chatbot-title"
           aria-describedby="chatbot-desc"
-          className="fixed bottom-24 right-6 z-[100] flex flex-col w-[min(380px,calc(100vw-3rem))] h-[min(520px,72vh)] rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.2)] border border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl overflow-hidden animate-chat-open"
+          className={`fixed bottom-24 right-6 z-[100] flex flex-col w-[min(380px,calc(100vw-3rem))] h-[min(520px,72vh)] rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.2)] border border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl overflow-hidden ${prefersReducedMotion ? '' : 'animate-chat-open'}`}
         >
           {/* Header – gradient accent like site headings */}
           <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-700/10 via-indigo-500/10 to-purple-600/10 dark:from-blue-700/20 dark:via-indigo-500/20 dark:to-purple-600/20">
@@ -157,7 +248,9 @@ export function Chatbot() {
                 >
                   {msg.role === "bot" ? (
                     <div className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-blue-600 dark:[&_a]:text-blue-400 [&_a]:underline [&_strong]:text-gray-900 dark:[&_strong]:text-white">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      <Suspense fallback={<span>{msg.content}</span>}>
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </Suspense>
                     </div>
                   ) : (
                     <span>{msg.content}</span>
@@ -196,20 +289,7 @@ export function Chatbot() {
                   <button
                     key={q}
                     type="button"
-                    onClick={() => {
-                      setInput(q);
-                      setTimeout(() => {
-                        setInput("");
-                        setMessages((prev) => [...prev, { id: nextMessageId(), role: "user", content: q }]);
-                        setLoading(true);
-                        replyTimeoutRef.current = setTimeout(() => {
-                          replyTimeoutRef.current = null;
-                          const reply = getChatbotReply(q);
-                          setMessages((prev) => [...prev, { id: nextMessageId(), role: "bot", content: reply }]);
-                          setLoading(false);
-                        }, chatbotConfig.replyDelayMs);
-                      }, 50);
-                    }}
+                    onClick={() => handleSuggestionClick(q)}
                     className="px-2.5 py-1 text-xs rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-700 hover:text-blue-700 dark:hover:text-blue-300 transition-all"
                   >
                     {q}

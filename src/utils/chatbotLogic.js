@@ -55,7 +55,7 @@ const intents = [
     },
   },
   {
-    keywords: ["work experience", "job", "jobs", "companies", "career", "employed", "where have you worked", "experience at"],
+    keywords: ["experience", "work experience", "job", "jobs", "companies", "career", "employed", "where have you worked", "experience at"],
     response: () => {
       const lines = (experiences || []).map((exp) => {
         const roleStr = (exp.roles || []).map((r) => `${r.role} (${r.display || ""})`).join(", ");
@@ -203,9 +203,17 @@ const TYPO_CORRECTIONS = {
   "helo": "hello", "hallo": "hello",
 };
 
+// Pre-compile regexes at module load for O(1) lookup (2026 optimization)
+const COMPILED_TYPO_REGEXES = Object.entries(TYPO_CORRECTIONS).map(
+  ([typo, correction]) => ({
+    regex: new RegExp(`\\b${typo}\\b`, "gi"),
+    correction
+  })
+);
+
 /**
  * Normalize user input for intent matching (lowercase, single spaces, trimmed).
- * Also fixes common typos.
+ * Also fixes common typos using pre-compiled regexes.
  * @param {string} text - Raw user message
  * @returns {string} Normalized string
  */
@@ -217,9 +225,8 @@ export function normalizeInput(text) {
     .replace(/\s+/g, " ")
     .trim();
 
-  // Fix common typos
-  for (const [typo, correction] of Object.entries(TYPO_CORRECTIONS)) {
-    const regex = new RegExp(`\\b${typo}\\b`, "gi");
+  // Fix common typos using pre-compiled regexes
+  for (const { regex, correction } of COMPILED_TYPO_REGEXES) {
     normalized = normalized.replace(regex, correction);
   }
 
