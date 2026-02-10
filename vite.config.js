@@ -16,6 +16,16 @@ export default defineConfig({
     }),
   ],
   base: "./",
+  server: {
+    // Proxy /api requests to Vercel Functions in development
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        rewrite: (path) => path,
+      }
+    }
+  },
   build: {
     // 2026 optimizations: modern targets + chunk splitting + terser minification
     target: "es2022", // Modern browser targets for smaller output

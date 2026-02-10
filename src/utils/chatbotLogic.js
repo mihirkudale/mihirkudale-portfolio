@@ -242,10 +242,75 @@ const FALLBACK_REPLY = `I didn't quite get that. Try asking about **${name}** �
 const EMPTY_INPUT_REPLY = `Ask about ${name} – e.g. "Who is Mihir?", "Education?", "Work experience?", "Certifications?", or "How to contact?"`;
 
 /**
- * Get a reply for the user message. Uses portfolio data only (no external API).
- * Never throws – returns fallback string if data or logic fails.
- * @param {string} userMessage - Raw user input (caller should trim and length-limit)
- * @returns {string} Reply text (markdown-safe; no user HTML)
+ * Get a reply from Groq API (with rule-based fallback)
+ * @param {string} userMessage - Raw user input
+ * @param {Array} conversationHistory - Previous messages for context
+ * @returns {Promise<{reply: string, source: 'api' | 'rule-based' | 'error'}>}
+ */
+export async function getChatbotReplyAsync(userMessage, conversationHistory = []) {
+  try {
+    const normalized = normalizeInput(userMessage);
+    if (!normalized) {
+      return { reply: EMPTY_INPUT_REPLY, source: 'rule-based' };
+    }
+
+    // Try Groq API first
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          conversationHistory,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // If API returns useRuleBased flag (rate limited, not configured, etc.)
+      if (data.useRuleBased || !data.reply) {
+        return getDefaultReply(normalized);
+      }
+
+      return {
+        reply: data.reply,
+        source: 'api',
+      };
+    } catch (apiError) {
+      console.warn('Groq API unavailable, using rule-based fallback:', apiError.message);
+      return getDefaultReply(normalized);
+    }
+  } catch (error) {
+    console.error('Chat logic error:', error);
+    return {
+      reply: "Something went wrong on my side. Please try again or use the Contact section.",
+      source: 'error',
+    };
+  }
+}
+
+/**
+ * Get rule-based reply (fallback logic)
+ */
+function getDefaultReply(normalized) {
+  for (const { keywords, response } of intents) {
+    const matched = keywords.some((kw) => matches(normalized, kw));
+    if (matched) {
+      return { reply: response(), source: 'rule-based' };
+    }
+  }
+  return { reply: FALLBACK_REPLY, source: 'rule-based' };
+}
+
+/**
+ * Synchronous fallback for backward compatibility (rule-based only)
+ * @deprecated Use getChatbotReplyAsync instead
  */
 export function getChatbotReply(userMessage) {
   try {

@@ -17,7 +17,7 @@ import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react"
 import PropTypes from "prop-types";
 import { X, Send, Bot } from "lucide-react";
 import { chatbotConfig } from "../constants/chatbot";
-import { getChatbotReply } from "../utils/chatbotLogic";
+import { getChatbotReplyAsync, getChatbotReply } from "../utils/chatbotLogic";
 import { homeData } from "../constants/home";
 
 // 2026 optimization: Lazy load ReactMarkdown (12KB+) since only used in chatbot
@@ -128,7 +128,7 @@ export function Chatbot() {
     };
   }, []);
 
-  const sendMessage = useCallback(() => {
+  const sendMessage = useCallback(async () => {
     const text = input.trim().slice(0, chatbotConfig.maxInputLength);
     if (!text || loading) return;
 
@@ -136,44 +136,74 @@ export function Chatbot() {
     setMessages((prev) => [...prev, { id: nextMessageId(), role: "user", content: text }]);
     setLoading(true);
 
-    replyTimeoutRef.current = setTimeout(() => {
-      replyTimeoutRef.current = null;
+    try {
+      // Get conversation history for context (last 6 messages)
+      const conversationHistory = messages.slice(-6).map(msg => ({
+        role: msg.role === 'user' ? 'user' : 'assistant',
+        content: msg.content,
+      }));
+
+      const { reply, source } = await getChatbotReplyAsync(text, conversationHistory);
+      
+      setMessages((prev) => [
+        ...prev,
+        { 
+          id: nextMessageId(), 
+          role: "bot", 
+          content: reply,
+          source // 'api', 'rule-based', or 'error'
+        }
+      ]);
+    } catch (error) {
+      console.error('Chat error:', error);
+      setMessages((prev) => [
+        ...prev,
+        { 
+          id: nextMessageId(), 
+          role: "bot", 
+          content: "Something went wrong. Please try again or use the Contact section." 
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }, [input, loading, messages]);
+
+  // 2026 optimization: Memoized suggestion handler using requestIdleCallback for better INP
+  const handleSuggestionClick = useCallback(async (q) => {
+    if (loading) return;
+
+    // Use requestIdleCallback to defer non-urgent work (better INP)
+    const runLogic = async () => {
+      setMessages((prev) => [...prev, { id: nextMessageId(), role: "user", content: q }]);
+      setLoading(true);
+
       try {
-        const reply = getChatbotReply(text);
-        setMessages((prev) => [...prev, { id: nextMessageId(), role: "bot", content: reply }]);
-      } catch {
+        const conversationHistory = messages.slice(-6).map(msg => ({
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content,
+        }));
+
+        const { reply, source } = await getChatbotReplyAsync(q, conversationHistory);
+        
         setMessages((prev) => [
           ...prev,
-          { id: nextMessageId(), role: "bot", content: "Something went wrong. Please try again or use the Contact section." },
+          { 
+            id: nextMessageId(), 
+            role: "bot", 
+            content: reply,
+            source 
+          }
+        ]);
+      } catch (error) {
+        console.error('Chat error:', error);
+        setMessages((prev) => [
+          ...prev,
+          { id: nextMessageId(), role: "bot", content: "Something went wrong. Please try again." },
         ]);
       } finally {
         setLoading(false);
       }
-    }, chatbotConfig.replyDelayMs);
-  }, [input, loading]);
-
-  // 2026 optimization: Memoized suggestion handler using requestIdleCallback for better INP
-  const handleSuggestionClick = useCallback((q) => {
-    if (loading) return;
-
-    // Use requestIdleCallback to defer non-urgent work (better INP)
-    const runLogic = () => {
-      setMessages((prev) => [...prev, { id: nextMessageId(), role: "user", content: q }]);
-      setLoading(true);
-      replyTimeoutRef.current = setTimeout(() => {
-        replyTimeoutRef.current = null;
-        try {
-          const reply = getChatbotReply(q);
-          setMessages((prev) => [...prev, { id: nextMessageId(), role: "bot", content: reply }]);
-        } catch {
-          setMessages((prev) => [
-            ...prev,
-            { id: nextMessageId(), role: "bot", content: "Something went wrong. Please try again." },
-          ]);
-        } finally {
-          setLoading(false);
-        }
-      }, chatbotConfig.replyDelayMs);
     };
 
     // requestIdleCallback with fallback for Safari
@@ -182,7 +212,7 @@ export function Chatbot() {
     } else {
       setTimeout(runLogic, 0);
     }
-  }, [loading]);
+  }, [loading, messages]);
 
   const handleKeyDown = useCallback(
     (e) => {
