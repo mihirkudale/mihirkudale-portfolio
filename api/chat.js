@@ -84,7 +84,7 @@ If asked about something not related to the portfolio, politely redirect to port
 
   try {
     const response = await groqInstance.chat.completions.create({
-      model: 'mixtral-8x7b-32768', // Fast, free tier model
+      model: 'llama-3.3-70b-versatile', // Fast, free tier model
       messages,
       temperature: 0.7,
       max_tokens: 256,
