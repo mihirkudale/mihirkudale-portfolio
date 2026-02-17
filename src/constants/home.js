@@ -24,7 +24,7 @@ export const homeData = {
     email: "mailto:mihirkudale94@gmail.com",
   },
   image: {
-    src: "https://i.postimg.cc/Mpbr4dPL/Mihir-photo.jpg",
+    src: "https://iili.io/qd8GmXt.png",
     alt: "Portrait of Mihir Kudale",
     width: 420,
     height: 520,
