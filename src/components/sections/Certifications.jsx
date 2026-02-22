@@ -7,15 +7,31 @@ const Certifications = () => {
   return (
     <section
       id="certifications"
-      className="scroll-mt-24 py-24 bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-gray-950 text-neutral-900 dark:text-white flex items-center justify-center"
+      className="relative py-28 px-6 bg-slate-50 text-slate-900 overflow-hidden"
     >
-      <RevealOnScroll>
-        <div className="max-w-6xl w-full px-6">
-          <h2 className="text-4xl font-bold text-center bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent mb-12 tracking-tight">
-            Certifications
-          </h2>
+      {/* Soft Background Orbs */}
+      <div
+        aria-hidden="true"
+        className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-blue-100/60 blur-[100px] pointer-events-none"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute top-1/4 left-0 w-[300px] h-[300px] rounded-full bg-violet-100/60 blur-[80px] pointer-events-none"
+      />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
+      <RevealOnScroll>
+        <div className="max-w-6xl w-full mx-auto relative z-10">
+          {/* Header */}
+          <div className="text-center mb-16 space-y-3">
+            <p className="text-sm font-bold text-blue-600 tracking-widest uppercase">
+              Credentials
+            </p>
+            <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+              Certifications
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {certifications.map((cert, index) => (
               <a
                 key={index}
@@ -23,22 +39,26 @@ const Certifications = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`Open ${cert.title} by ${cert.issuer}`}
-                className="flex items-center gap-5 bg-white/60 dark:bg-white/10 backdrop-blur-md border border-blue-100 dark:border-blue-700 rounded-xl p-5 shadow-md hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+                className="flex items-center gap-5 glass-card bg-white p-6 hover:-translate-y-1 transition-all duration-300 group"
               >
-                <img
-                  src={cert.img}
-                  alt={`${cert.issuer} logo`}
-                  className="w-14 h-14 object-contain bg-white dark:bg-gray-800 rounded-full p-1 shadow"
-                  loading="lazy"
-                />
-                <div>
-                  <p className="text-base font-semibold text-blue-700 dark:text-blue-400">
+                {/* Logo wrapper */}
+                <div className="flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden bg-white border-2 border-slate-100 p-2 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                  <img
+                    src={cert.img}
+                    alt={`${cert.issuer} logo`}
+                    className="w-full h-full object-contain"
+                    loading="lazy"
+                  />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-base font-bold text-slate-800 group-hover:text-blue-600 transition-colors leading-tight mb-2">
                     {cert.title}
                   </p>
-                  <p className="text-xs mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-800 dark:bg-blue-700 dark:text-white rounded-full">
-                    <BsPatchCheckFill className="text-blue-600 dark:text-blue-300 text-sm" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-full bg-blue-50 border border-blue-100 text-blue-700">
+                    <BsPatchCheckFill className="text-blue-500 text-sm" />
                     {cert.issuer}
-                  </p>
+                  </span>
                 </div>
               </a>
             ))}

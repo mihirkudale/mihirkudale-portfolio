@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   FaReact,
   FaNodeJs,
@@ -35,30 +35,29 @@ const iconMap = {
     />
   ),
   mysql: <SiMysql className="text-blue-500 text-lg" />,
-  mssql: <DiMsqlServer className="text-red-600 text-lg" />,
-  postgresql: <SiPostgresql className="text-blue-600 text-lg" />,
-  mongodb: <SiMongodb className="text-green-700 text-lg" />,
-  cassandra: <SiApachecassandra className="text-cyan-700 text-lg" />,
-
+  mssql: <DiMsqlServer className="text-red-500 text-lg" />,
+  postgresql: <SiPostgresql className="text-sky-500 text-lg" />,
+  mongodb: <SiMongodb className="text-green-600 text-lg" />,
+  cassandra: <SiApachecassandra className="text-cyan-500 text-lg" />,
   powerbi: (
     <img
       src="https://img.icons8.com/color/48/power-bi.png"
       alt="Power BI"
-      className="w-5 h-5"
+      className="w-5 h-5 drop-shadow-sm"
     />
   ),
   tableau: (
     <img
       src="https://img.icons8.com/color/48/tableau-software.png"
       alt="Tableau"
-      className="w-5 h-5"
+      className="w-5 h-5 drop-shadow-sm"
     />
   ),
   excel: (
     <img
       src="https://img.icons8.com/color/48/microsoft-excel-2019--v1.png"
       alt="Excel"
-      className="w-5 h-5"
+      className="w-5 h-5 drop-shadow-sm"
     />
   ),
   quicksight: <FaAws className="text-orange-500 text-lg" />,
@@ -66,12 +65,11 @@ const iconMap = {
     <img
       src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjMDAwMDAwIiBzdHlsZT0ib3BhY2l0eToxOyI+PHBhdGggIGQ9Ik0xMS45NDggMEEyLjEgMi4xIDAgMCAwIDkuODUgMi4xMDRhMi4xIDIuMSAwIDAgMCAuMzU2IDEuMTY2bC44OTUtLjg5NmEuODg0Ljg4NCAwIDEgMSAuNTY1LjU2NGwtLjg5NS44OTVBMi4wOTYgMi4wOTYgMCAwIDAgMTMuMTE5LjM1OUEyLjEgMi4xIDAgMCAwIDExLjk0OSAwbS0uODM2IDYuMTEzYTMuMjYgMy4yNiAwIDAgMC0uNjUyLTEuOTY1TDkuMjk1IDUuMzFhMS42NyAxLjY3IDAgMCAxLS4zMTcgMi4wMTJsLjYzMiAxLjU0NWEzLjI4IDMuMjggMCAwIDAgMS41MDMtMi43NTRtLTMuMjUgMS42NjZoLS4wM0ExLjY3IDEuNjcgMCAwIDEgNy44MyA0LjQ0YTEuNjcgMS42NyAwIDAgMSAuOTIuMjc1TDkuOSAzLjU2NGEzLjI4IDMuMjggMCAwIDAtNC4xMzMgNS4wOTRhMy4yOCAzLjI4IDAgMCAwIDIuNzI4LjY2NnptNC4xMjkgMS4zMzZjLS43MjggMC0xLjQ1Mi4xMDYtMi4xNS4zMTVsLjkyMiAyLjI1MmE1LjAyIDUuMDIgMCAxIDEtMS4xMjcuNDM1bC0uOTEtMi4yNDRhNy40NCA3LjQ0IDAgMCAwLTMuNDEgOS45NTZ2LjAwMWE3LjQ0IDcuNDQgMCAwIDAgOS45NTcgMy40MWguMDAxYTcuNDQgNy40NCAwIDAgMCAzLjQxMi05Ljk1N0E3LjQ0IDcuNDQgMCAwIDAgMTIgOS4xMTNoLS4wMDh6Ii8+PC9zdmc+"
       alt="Looker"
-      className="w-5 h-5"
+      className="w-5 h-5 opacity-80"
     />
   ),
-
-  django: <SiDjango className="text-green-800 text-lg" />,
-  flask: <SiFlask className="text-gray-800 text-lg" />,
+  django: <SiDjango className="text-green-700 text-lg" />,
+  flask: <SiFlask className="text-black text-lg" />,
   streamlit: (
     <img
       src="https://streamlit.io/images/brand/streamlit-logo-primary-colormark-darktext.svg"
@@ -80,15 +78,14 @@ const iconMap = {
     />
   ),
   fastapi: <SiFastapi className="text-green-500 text-lg" />,
-  rest: <span className="text-gray-700 text-sm font-semibold">REST</span>,
+  rest: <span className="text-slate-600 text-xs font-bold tracking-tight">REST</span>,
   html: <SiHtml5 className="text-orange-600 text-lg" />,
-  css: <SiCss3 className="text-blue-600 text-lg" />,
+  css: <SiCss3 className="text-blue-500 text-lg" />,
   javascript: <SiJavascript className="text-yellow-500 text-lg" />,
-  react: <FaReact className="text-blue-500 text-lg" />,
+  react: <FaReact className="text-cyan-500 text-lg" />,
   node: <FaNodeJs className="text-green-600 text-lg" />,
-  tailwind: <SiTailwindcss className="text-teal-500 text-lg" />,
-
-  aws: <FaAws className="text-yellow-600 text-lg" />,
+  tailwind: <SiTailwindcss className="text-teal-400 text-lg" />,
+  aws: <FaAws className="text-orange-500 text-lg" />,
   azure: (
     <img
       src="https://www.tigera.io/app/uploads/2023/07/MS-Azure-logo.svg"
@@ -104,43 +101,85 @@ const iconMap = {
     />
   ),
   spark: <SiApachespark className="text-orange-500 text-lg" />,
-  hive: <SiApachehive className="text-yellow-700 text-lg" />,
+  hive: <SiApachehive className="text-amber-500 text-lg" />,
   hadoop: <SiApachehadoop className="text-yellow-600 text-lg" />,
   kafka: <SiApachekafka className="text-black text-lg" />,
   docker: <FaDocker className="text-blue-500 text-lg" />,
-  git: <FaGitAlt className="text-orange-500 text-lg" />,
+  git: <FaGitAlt className="text-orange-600 text-lg" />,
 };
 
-const SkillItem = ({ iconKey, name }) => (
-  <div className="flex items-center gap-2 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-medium shadow-sm">
+const SkillBadge = ({ iconKey, name }) => (
+  <div className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50 hover:shadow-[0_4px_12px_rgba(59,130,246,0.1)] hover:-translate-y-0.5 cursor-default">
     {iconMap[iconKey]}
     <span>{name}</span>
   </div>
 );
 
 const Skills = () => {
+  const [activeCategory, setActiveCategory] = useState("All");
+  const categoryTitles = ["All", ...categories.map((c) => c.title)];
+
+  const filteredCategories =
+    activeCategory === "All"
+      ? categories
+      : categories.filter((c) => c.title === activeCategory);
+
   return (
     <section
       id="skills"
-      className="scroll-mt-24 py-24 px-6 bg-gradient-to-b from-white via-blue-50 to-white dark:from-gray-900 dark:via-gray-950 dark:to-gray-900"
+      className="relative py-28 px-6 bg-slate-50 text-slate-900 overflow-hidden"
     >
-      <div className="max-w-6xl mx-auto">
-        <h2 className="text-4xl font-bold text-center mb-16 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent">
-          My Tech Stack
-        </h2>
+      {/* Light Orbs */}
+      <div
+        aria-hidden="true"
+        className="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-blue-100/50 blur-[120px] pointer-events-none"
+      />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
-          {categories.map((category, index) => (
+      <div className="max-w-6xl mx-auto relative z-10">
+        {/* Header */}
+        <div className="text-center mb-16 space-y-3">
+          <p className="text-sm font-bold text-blue-600 tracking-widest uppercase">
+            Arsenal
+          </p>
+          <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+            My Tech Stack
+          </h2>
+        </div>
+
+        {/* Category Filter Tabs */}
+        <div className="flex flex-wrap justify-center gap-2 mb-12">
+          {categoryTitles.map((title) => (
+            <button
+              key={title}
+              onClick={() => setActiveCategory(title)}
+              className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 border ${activeCategory === title
+                  ? "bg-blue-600 text-white border-blue-600 shadow-[0_8px_16px_rgba(37,99,235,0.25)] -translate-y-0.5"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm"
+                }`}
+            >
+              {title}
+            </button>
+          ))}
+        </div>
+
+        {/* Skill Category Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          {filteredCategories.map((category, index) => (
             <div
               key={index}
-              className="bg-white/60 dark:bg-white/10 backdrop-blur-md border border-blue-100 dark:border-blue-700 rounded-2xl shadow-lg p-6 transition hover:shadow-xl hover:scale-[1.01] duration-300"
+              className="glass-card gradient-border p-8 bg-white/80 group"
             >
-              <h3 className="text-xl font-semibold text-blue-700 dark:text-blue-400 mb-4">
-                {category.title}
-              </h3>
-              <div className="flex flex-wrap gap-3">
+              {/* Title with accent */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="h-6 w-1.5 rounded-full bg-gradient-to-b from-blue-500 to-cyan-400" />
+                <h3 className="text-xl font-bold text-slate-900">
+                  {category.title}
+                </h3>
+              </div>
+
+              <div className="flex flex-wrap gap-2.5">
                 {category.skills.map((skill, i) => (
-                  <SkillItem
+                  <SkillBadge
                     key={i}
                     iconKey={skill.icon}
                     name={skill.name}

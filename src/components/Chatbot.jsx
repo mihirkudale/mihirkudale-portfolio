@@ -8,22 +8,22 @@
  * - ARIA live region for new messages
  * - Proper dialog role and labels
  * 
- * 2026 optimizations:
- * - Lazy-loaded ReactMarkdown for reduced bundle size
- * - Memoized handlers with useCallback
- * - Reduced motion support
+ * 2026 Light Mode Design:
+ * - Premium Apple-style glassmorphism
+ * - Soft drop-shadows
+ * - Crisp slate/white containers with blue accents
  */
 import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import PropTypes from "prop-types";
-import { X, Send, Bot } from "lucide-react";
+import { X, Send } from "lucide-react";
 import { chatbotConfig } from "../constants/chatbot";
-import { getChatbotReplyAsync, getChatbotReply } from "../utils/chatbotLogic";
+import { getChatbotReplyAsync } from "../utils/chatbotLogic";
 import { homeData } from "../constants/home";
 
-// 2026 optimization: Lazy load ReactMarkdown (12KB+) since only used in chatbot
+// Lazy load ReactMarkdown (12KB+) since only used in chatbot
 const ReactMarkdown = lazy(() => import("react-markdown").then(m => ({ default: m.default })));
 
-/** Generate a stable id for a new message (avoids key collisions) */
+/** Generate a stable id for a new message */
 function nextMessageId() {
   return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -32,7 +32,7 @@ const initialMessages = [
   { id: nextMessageId(), role: "bot", content: chatbotConfig.welcomeMessage },
 ];
 
-/** Hook to detect user's reduced motion preference (2026 a11y standard) */
+/** Hook to detect user's reduced motion preference */
 function usePrefersReducedMotion() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(
     () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -69,7 +69,7 @@ export function Chatbot() {
     scrollToBottom();
   }, [messages, scrollToBottom]);
 
-  // Focus trap for modal accessibility (2026 standard)
+  // Focus trap for modal accessibility
   useEffect(() => {
     if (!open || !dialogRef.current) return;
 
@@ -104,7 +104,7 @@ export function Chatbot() {
     if (open) inputRef.current?.focus();
   }, [open]);
 
-  // Keyboard accessibility: Escape to close and clear
+  // Keyboard accessibility: Escape to close
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && open) {
@@ -115,7 +115,6 @@ export function Chatbot() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
-  // Clear chat history when closing
   const handleClose = useCallback(() => {
     setOpen(false);
     setInput("");
@@ -137,43 +136,36 @@ export function Chatbot() {
     setLoading(true);
 
     try {
-      // Get conversation history for context (last 6 messages)
       const conversationHistory = messages.slice(-6).map(msg => ({
         role: msg.role === 'user' ? 'user' : 'assistant',
         content: msg.content,
       }));
 
       const { reply, source } = await getChatbotReplyAsync(text, conversationHistory);
-      
+
       setMessages((prev) => [
         ...prev,
-        { 
-          id: nextMessageId(), 
-          role: "bot", 
+        {
+          id: nextMessageId(),
+          role: "bot",
           content: reply,
-          source // 'api', 'rule-based', or 'error'
+          source
         }
       ]);
     } catch (error) {
       console.error('Chat error:', error);
       setMessages((prev) => [
         ...prev,
-        { 
-          id: nextMessageId(), 
-          role: "bot", 
-          content: "Something went wrong. Please try again or use the Contact section." 
-        },
+        { id: nextMessageId(), role: "bot", content: "Something went wrong. Please try again." },
       ]);
     } finally {
       setLoading(false);
     }
   }, [input, loading, messages]);
 
-  // 2026 optimization: Memoized suggestion handler using requestIdleCallback for better INP
   const handleSuggestionClick = useCallback(async (q) => {
     if (loading) return;
 
-    // Use requestIdleCallback to defer non-urgent work (better INP)
     const runLogic = async () => {
       setMessages((prev) => [...prev, { id: nextMessageId(), role: "user", content: q }]);
       setLoading(true);
@@ -185,14 +177,14 @@ export function Chatbot() {
         }));
 
         const { reply, source } = await getChatbotReplyAsync(q, conversationHistory);
-        
+
         setMessages((prev) => [
           ...prev,
-          { 
-            id: nextMessageId(), 
-            role: "bot", 
+          {
+            id: nextMessageId(),
+            role: "bot",
             content: reply,
-            source 
+            source
           }
         ]);
       } catch (error) {
@@ -206,7 +198,6 @@ export function Chatbot() {
       }
     };
 
-    // requestIdleCallback with fallback for Safari
     if ('requestIdleCallback' in window) {
       window.requestIdleCallback(runLogic, { timeout: 100 });
     } else {
@@ -226,42 +217,46 @@ export function Chatbot() {
 
   return (
     <>
-      {/* Chat panel – theme: blue/indigo, glassmorphism, rounded-2xl (matches site) */}
+      {/* ── Chat Panel (Light Mode Glassmorphism) ── */}
       {open && (
         <div
           ref={dialogRef}
           role="dialog"
           aria-modal="true"
           aria-labelledby="chatbot-title"
-          aria-describedby="chatbot-desc"
-          className={`fixed bottom-24 right-6 z-[100] flex flex-col w-[min(380px,calc(100vw-3rem))] h-[min(520px,72vh)] rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.2)] border border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl overflow-hidden ${prefersReducedMotion ? '' : 'animate-chat-open'}`}
+          className={`fixed bottom-24 right-6 z-[100] flex flex-col w-[min(380px,calc(100vw-3rem))] h-[min(540px,72vh)] rounded-[1.5rem] bg-white/95 backdrop-blur-2xl border border-slate-200 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] overflow-hidden ${prefersReducedMotion ? '' : 'animate-chat-open'}`}
         >
-          {/* Header – gradient accent like site headings */}
-          <div className="flex items-center justify-between px-4 py-3.5 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-700/10 via-indigo-500/10 to-purple-600/10 dark:from-blue-700/20 dark:via-indigo-500/20 dark:to-purple-600/20">
-            <div className="flex items-center gap-2.5">
-              <img
-                src={homeData.image.src}
-                alt=""
-                className="w-9 h-9 rounded-xl object-cover shadow-sm"
-              />
-              <span id="chatbot-title" className="font-semibold text-sm text-gray-900 dark:text-white">
-                {chatbotConfig.botName}
-              </span>
-              <span id="chatbot-desc" className="sr-only">Ask questions about the portfolio</span>
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 bg-slate-50/50">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <img
+                  src={homeData.image.src}
+                  alt="Mihir"
+                  className="w-10 h-10 rounded-xl object-cover shadow-sm border border-slate-200"
+                />
+                <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></span>
+              </div>
+              <div>
+                <h3 id="chatbot-title" className="font-bold text-[15px] text-slate-900 leading-tight">
+                  {chatbotConfig.botName}
+                </h3>
+                <p className="text-xs font-semibold text-slate-500">Replies instantly</p>
+              </div>
             </div>
             <button
               type="button"
               onClick={handleClose}
-              className="p-2 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-200/80 dark:hover:bg-gray-700/80 hover:text-gray-900 dark:hover:text-white transition-colors"
+              className="p-2 rounded-full text-slate-400 hover:bg-slate-200 hover:text-slate-700 transition-colors focus:outline-none"
               aria-label="Close chat"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Messages – light/dark surfaces, blue for user bubbles */}
+          {/* Messages Area */}
           <div
-            className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 dark:bg-gray-950/50"
+            className="flex-1 overflow-y-auto p-5 space-y-5 bg-slate-50/30"
             aria-live="polite"
             aria-atomic="false"
           >
@@ -271,13 +266,13 @@ export function Chatbot() {
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${msg.role === "user"
-                    ? "bg-blue-700 text-white rounded-br-md shadow-sm"
-                    : "bg-white dark:bg-gray-800/90 text-gray-800 dark:text-gray-200 rounded-bl-md border border-gray-200 dark:border-gray-700 shadow-sm"
+                  className={`max-w-[85%] rounded-[1.25rem] px-4 py-3 text-[15px] shadow-sm ${msg.role === "user"
+                      ? "bg-blue-600 text-white rounded-br-sm shadow-[0_4px_14px_rgba(37,99,235,0.2)]"
+                      : "bg-white text-slate-700 rounded-bl-sm border border-slate-100/80 leading-relaxed font-medium"
                     }`}
                 >
                   {msg.role === "bot" ? (
-                    <div className="prose prose-sm max-w-none dark:prose-invert [&_a]:text-blue-600 dark:[&_a]:text-blue-400 [&_a]:underline [&_strong]:text-gray-900 dark:[&_strong]:text-white">
+                    <div className="prose prose-sm max-w-none text-slate-700 font-medium leading-[1.6] [&_a]:text-blue-600 [&_a]:underline [&_strong]:text-slate-900 [&_strong]:font-bold">
                       <Suspense fallback={<span>{msg.content}</span>}>
                         <ReactMarkdown>{msg.content}</ReactMarkdown>
                       </Suspense>
@@ -288,13 +283,14 @@ export function Chatbot() {
                 </div>
               </div>
             ))}
+
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-white dark:bg-gray-800/90 rounded-2xl rounded-bl-md px-4 py-2.5 border border-gray-200 dark:border-gray-700 shadow-sm">
-                  <span className="inline-flex gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400 animate-bounce [animation-delay:0ms]" />
-                    <span className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400 animate-bounce [animation-delay:150ms]" />
-                    <span className="w-2 h-2 rounded-full bg-blue-500 dark:bg-blue-400 animate-bounce [animation-delay:300ms]" />
+                <div className="bg-white rounded-[1.25rem] rounded-bl-sm px-5 py-3.5 border border-slate-100 shadow-sm">
+                  <span className="inline-flex gap-1.5 align-middle">
+                    <span className="w-2 h-2 rounded-full bg-blue-500/80 animate-bounce [animation-delay:0ms]" />
+                    <span className="w-2 h-2 rounded-full bg-blue-500/80 animate-bounce [animation-delay:150ms]" />
+                    <span className="w-2 h-2 rounded-full bg-blue-500/80 animate-bounce [animation-delay:300ms]" />
                   </span>
                 </div>
               </div>
@@ -302,25 +298,16 @@ export function Chatbot() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Question Suggestions */}
+          {/* Suggestions */}
           {messages.length <= 2 && !loading && (
-            <div className="px-3 py-2 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950/30">
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Try asking:</p>
-              <div className="flex flex-wrap gap-1.5">
-                {[
-                  "Skills",
-                  "Projects",
-                  "Experience",
-                  "Education",
-                  "Certifications",
-                  "Contact",
-                  "Help",
-                ].map((q) => (
+            <div className="px-4 py-3 border-t border-slate-100 bg-white">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {["Experience", "Projects", "Skills", "Contact"].map((q) => (
                   <button
                     key={q}
                     type="button"
                     onClick={() => handleSuggestionClick(q)}
-                    className="px-2.5 py-1 text-xs rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-700 hover:text-blue-700 dark:hover:text-blue-300 transition-all"
+                    className="flex-shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 text-slate-600 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors"
                   >
                     {q}
                   </button>
@@ -329,18 +316,18 @@ export function Chatbot() {
             </div>
           )}
 
-          {/* Input – same border/ring as site inputs */}
-          <div className="p-3 border-t border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
-            <div className="flex gap-2">
+          {/* Input Area */}
+          <div className="p-4 border-t border-slate-200 bg-white shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+            <div className="flex gap-3">
               <input
                 ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about skills, projects, contact..."
+                placeholder="Ask about my work..."
                 maxLength={chatbotConfig.maxInputLength}
-                className="flex-1 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 px-4 py-2.5 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:ring-blue-400/50 transition"
+                className="flex-1 rounded-xl bg-slate-100/80 px-4 py-3 text-[15px] font-medium text-slate-800 placeholder-slate-400 border border-transparent focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-50/50 transition-all"
                 disabled={loading}
                 aria-label="Chat message"
               />
@@ -348,53 +335,43 @@ export function Chatbot() {
                 type="button"
                 onClick={sendMessage}
                 disabled={!input.trim() || loading}
-                className="rounded-xl bg-blue-700 px-4 py-2.5 text-white hover:bg-blue-800 disabled:opacity-50 disabled:pointer-events-none transition-all shadow-sm hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900"
+                className="flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-white shadow-[0_4px_14px_rgba(37,99,235,0.2)] hover:bg-blue-700 hover:shadow-[0_6px_20px_rgba(37,99,235,0.3)] disabled:opacity-50 disabled:pointer-events-none transition-all focus:outline-none active:scale-95"
                 aria-label="Send message"
               >
-                <Send className="w-5 h-5" />
+                <Send className="w-5 h-5 -ml-0.5" />
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Toggle – 2026 trends: glassmorphism, gradient, subtle animations */}
+      {/* ── Floating Toggle Button (Light Mode) ── */}
       {!open && (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="fixed bottom-24 right-6 z-[99] flex items-center gap-3 pl-1.5 pr-4 py-1.5 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white shadow-[0_8px_30px_rgb(59,130,246,0.5)] hover:shadow-[0_8px_40px_rgb(99,102,241,0.6)] hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-gray-900 transition-all duration-300 backdrop-blur-sm border border-white/20"
+          className="fixed bottom-6 right-20 z-[99] flex items-center gap-2.5 p-1.5 pr-5 rounded-full bg-white text-slate-900 border border-slate-200 shadow-[0_10px_25px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_35px_rgba(0,0,0,0.15)] hover:border-slate-300 hover:-translate-y-1 transition-all duration-300 focus:outline-none"
           aria-label="Open chat assistant"
           aria-haspopup="dialog"
         >
-          {/* Profile with status indicator */}
+          {/* Profile ring */}
           <div className="relative">
             <img
               src={homeData.image.src}
-              alt="Chat with Mihir"
-              className="w-9 h-9 rounded-full object-cover ring-2 ring-white/50"
+              alt="Mihir"
+              className="w-11 h-11 rounded-full object-cover"
             />
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white animate-pulse" />
+            {/* Green dot */}
+            <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white" />
           </div>
 
-          {/* Animated text with typing effect */}
-          <span className="text-sm font-medium tracking-wide">
-            <span className="inline-flex items-center gap-1">
-              Chat with me
-              <span className="flex gap-0.5">
-                <span className="w-1 h-1 bg-white rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <span className="w-1 h-1 bg-white rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <span className="w-1 h-1 bg-white rounded-full animate-bounce" />
-              </span>
-            </span>
+          <span className="text-sm font-bold tracking-tight text-slate-700">
+            Ask me anything
           </span>
         </button>
       )}
     </>
   );
 }
-
-// PropTypes for documentation (no props currently, but explicit for clarity)
-Chatbot.propTypes = {};
 
 export default Chatbot;

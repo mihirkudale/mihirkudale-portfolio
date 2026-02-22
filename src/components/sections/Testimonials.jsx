@@ -7,42 +7,58 @@ export const Testimonials = () => {
   return (
     <section
       id="testimonials"
-      className="scroll-mt-24 py-24 bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-gray-950 text-neutral-900 dark:text-white"
+      className="relative py-28 px-6 bg-white text-slate-900 overflow-hidden"
     >
+      {/* Light Background Orbs */}
+      <div
+        aria-hidden="true"
+        className="absolute top-0 left-0 w-[400px] h-[400px] rounded-full bg-blue-50/80 blur-[120px] pointer-events-none"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute bottom-0 right-0 w-[350px] h-[350px] rounded-full bg-slate-50/80 blur-[100px] pointer-events-none"
+      />
+
       <RevealOnScroll>
-        <div className="max-w-6xl mx-auto px-6">
-          <h2 className="text-4xl font-bold text-center bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent mb-12 tracking-tight">
-            Testimonials
-          </h2>
+        <div className="max-w-7xl mx-auto relative z-10">
+          {/* Header */}
+          <div className="text-center mb-16 space-y-3">
+            <p className="text-sm font-bold text-blue-600 tracking-widest uppercase">
+              Social Proof
+            </p>
+            <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+              Testimonials
+            </h2>
+          </div>
 
           <div className="grid gap-8 sm:gap-10 md:grid-cols-2 lg:grid-cols-3">
             {testimonials.map((t, i) => (
               <article
                 key={i}
-                className="group relative overflow-hidden rounded-2xl border border-blue-100/60 dark:border-blue-800/50 bg-white/70 dark:bg-white/10 backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
+                className="group relative overflow-hidden glass-card bg-slate-50/40 hover:bg-white flex flex-col transition-all duration-300 transform hover:-translate-y-1"
                 aria-label={`Testimonial by ${t.name}`}
               >
-                {/* Gradient accent bar */}
-                <div className="h-1.5 bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600" />
+                {/* Accent top bar */}
+                <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-cyan-400 opacity-90 group-hover:opacity-100 transition-opacity" />
 
-                <div className="p-6">
-                  {/* Subtle background quote icon */}
+                <div className="p-8 flex flex-col flex-1">
+                  {/* Subtle quote icon */}
                   <FaQuoteLeft
                     aria-hidden="true"
-                    className="absolute -right-3 -top-1 text-6xl opacity-10 dark:opacity-15 pointer-events-none"
+                    className="absolute right-6 top-8 text-5xl text-blue-500/10 pointer-events-none"
                   />
 
-                  <header className="mb-4 flex items-center gap-4">
-                    {/* Initials circle replaces avatar */}
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-white font-semibold shadow-sm">
+                  {/* Author Header */}
+                  <header className="mb-6 flex items-center gap-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 text-white text-base font-extrabold shadow-md">
                       {getInitials(t.name)}
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      <h3 className="truncate font-semibold text-lg text-gray-900 dark:text-white">
+                      <h3 className="truncate font-extrabold text-slate-900 text-lg">
                         {t.name}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm font-semibold text-slate-500">
                         {t.role}
                       </p>
                     </div>
@@ -52,8 +68,7 @@ export const Testimonials = () => {
                         href={t.linkedin}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center justify-center rounded-full p-2 text-blue-600 transition-transform duration-200 hover:scale-110 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400/60 dark:text-blue-300 dark:hover:text-blue-200"
-                        title="View LinkedIn Profile"
+                        className="flex-shrink-0 flex items-center justify-center rounded-full p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 hover:-translate-y-0.5"
                         aria-label={`Open ${t.name}'s LinkedIn profile`}
                       >
                         <FaLinkedin className="text-xl" />
@@ -61,14 +76,12 @@ export const Testimonials = () => {
                     )}
                   </header>
 
-                  <p className="text-base leading-relaxed text-gray-800 dark:text-gray-300 italic">
-                    “{t.quote}”
-                  </p>
-                </div>
-
-                {/* Subtle gradient glow on hover */}
-                <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                  <div className="absolute -inset-20 bg-gradient-to-br from-blue-500/0 via-indigo-500/5 to-purple-500/0 blur-2xl" />
+                  {/* Quote Body */}
+                  <div className="relative flex-1">
+                    <p className="text-base leading-relaxed text-slate-600 font-medium italic relative z-10">
+                      "{t.quote}"
+                    </p>
+                  </div>
                 </div>
               </article>
             ))}

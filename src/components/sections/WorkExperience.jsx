@@ -8,64 +8,97 @@ const WorkExperience = () => {
     <section
       id="experience"
       aria-labelledby="experience-heading"
-      className="py-24 px-6 bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-gray-950 text-neutral-900 dark:text-white"
+      className="relative py-28 px-6 bg-white text-slate-900 overflow-hidden"
     >
-      <RevealOnScroll>
-        <div className="max-w-6xl mx-auto">
-          <h2
-            id="experience-heading"
-            className="text-4xl font-bold text-center bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent mb-14 tracking-tight"
-          >
-            Work Experience
-          </h2>
+      {/* Background orb */}
+      <div
+        aria-hidden="true"
+        className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-blue-50 blur-[120px] pointer-events-none"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-violet-50 blur-[100px] pointer-events-none"
+      />
 
-          <ol className="relative border-s-2 border-blue-100/70 dark:border-white/10 ps-6 space-y-12">
+      <RevealOnScroll>
+        <div className="max-w-6xl mx-auto relative z-10">
+          {/* Header */}
+          <div className="text-center mb-16 space-y-3">
+            <p className="text-sm font-bold text-blue-600 tracking-widest uppercase">
+              Career
+            </p>
+            <h2
+              id="experience-heading"
+              className="text-4xl font-extrabold text-slate-900 tracking-tight"
+            >
+              Work Experience
+            </h2>
+          </div>
+
+          {/* Timeline */}
+          <ol className="relative space-y-12">
+            {/* Elegant thin timeline line */}
+            <div
+              aria-hidden="true"
+              className="absolute left-[7px] top-0 bottom-0 w-[2px] bg-slate-200 rounded-full"
+            />
+
             {experiences.map((exp, index) => (
-              <li key={index} className="group relative">
-                {/* Timeline Dot */}
+              <li key={index} className="group relative pl-10 md:pl-12">
+                {/* Clean timeline dot */}
                 <span
                   aria-hidden="true"
-                  className="absolute -start-[9px] top-6 h-4 w-4 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 ring-4 ring-white dark:ring-gray-900 shadow-[0_0_10px_rgba(37,99,235,0.4)] z-10"
+                  className="absolute left-[2px] top-6 h-3 w-3 rounded-full bg-blue-500 ring-[6px] ring-white z-10 pointer-events-none transition-transform duration-500 group-hover:scale-125 group-hover:bg-blue-600"
                 />
 
-                <article className="bg-white/80 dark:bg-white/5 backdrop-blur-md border border-blue-100 dark:border-white/10 rounded-2xl shadow-sm hover:shadow-xl transition-shadow duration-300 p-6 md:p-8">
-                  <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                    <div className="flex items-center gap-4">
-                      <div className="flex-shrink-0 h-12 w-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                {/* Card */}
+                <article className="glass-card gradient-border p-8 bg-slate-50/50 hover:bg-white transition-colors duration-300">
+                  {/* Company header */}
+                  <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+                    <div className="flex items-center gap-5">
+                      {/* Company icon */}
+                      <div className="flex-shrink-0 h-14 w-14 rounded-2xl bg-white border border-slate-200 text-blue-600 flex items-center justify-center shadow-sm group-hover:shadow-[0_8px_16px_rgba(37,99,235,0.12)] transition-shadow duration-300">
                         <LuBuilding2 className="h-6 w-6" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
+                        <h3 className="text-xl font-extrabold text-slate-900 leading-tight">
                           {exp.company}
                         </h3>
-                        <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          <LuMapPin className="h-3.5 w-3.5" />
+                        <div className="flex items-center gap-1.5 text-sm font-medium text-slate-500 mt-1">
+                          <LuMapPin className="h-4 w-4 text-blue-500" />
                           <span>{exp.location}</span>
                         </div>
                       </div>
                     </div>
                   </header>
 
-                  <div className="space-y-6">
+                  {/* Roles */}
+                  <div className="space-y-8">
                     {exp.roles.map((role, rIndex) => (
-                      <div key={rIndex} className={`relative ${rIndex !== exp.roles.length - 1 ? "pb-6 border-b border-gray-100 dark:border-gray-800" : ""}`}>
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                          <h4 className="text-lg font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-2">
-                            <LuBriefcase className="h-4.5 w-4.5 opacity-80" />
+                      <div
+                        key={rIndex}
+                        className={`relative ${rIndex !== exp.roles.length - 1
+                            ? "pb-8 border-b border-slate-200"
+                            : ""
+                          }`}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                          <h4 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <LuBriefcase className="h-5 w-5 text-blue-500" />
                             {role.role}
                           </h4>
-                          <span className="inline-flex px-3 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                          <span className="inline-flex px-3.5 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-blue-100 text-blue-700">
                             {role.display}
                           </span>
                         </div>
 
                         {/* Tech Stack Chips */}
                         {role.tech && (
-                          <div className="flex flex-wrap gap-2 mt-3">
+                          <div className="flex flex-wrap gap-2 mt-4 pt-2">
                             {role.tech.map((tech, tIndex) => (
                               <span
                                 key={tIndex}
-                                className="px-2.5 py-0.5 text-xs font-medium rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-200 border border-blue-100 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors cursor-default"
+                                className="px-3 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-200 text-slate-600 shadow-sm hover:border-blue-300 hover:text-blue-700 cursor-default transition-colors duration-200"
                               >
                                 {tech}
                               </span>

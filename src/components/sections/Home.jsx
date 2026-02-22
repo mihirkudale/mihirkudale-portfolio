@@ -3,114 +3,148 @@ import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi";
 import { homeData } from "../../constants/home";
 
+const stats = [
+  { value: "3+", label: "Years Experience" },
+  { value: "30+", label: "Projects Built" },
+  { value: "10+", label: "Certifications" },
+];
+
 export const Home = () => {
   return (
     <section
       id="home"
-      className="relative min-h-screen overflow-hidden bg-gradient-to-b from-white to-blue-50 dark:from-gray-950 dark:to-gray-900 text-neutral-900 dark:text-white px-6 md:px-12 py-20 flex items-center justify-center"
+      className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900 px-6 md:px-12 py-24 flex items-center justify-center"
     >
-      {/* Background Shapes */}
+      {/* ── Soft Pastel Gradient Orbs (Light Mode) ── */}
       <div
         aria-hidden="true"
-        className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl dark:bg-blue-500/10"
+        className="absolute top-[-10%] left-[-5%] h-[500px] w-[500px] rounded-full bg-blue-400/20 blur-[120px] animate-orb-1 pointer-events-none"
       />
       <div
         aria-hidden="true"
-        className="absolute -bottom-24 -right-24 h-72 w-72 rounded-full bg-purple-200/40 blur-3xl dark:bg-purple-500/10"
+        className="absolute bottom-[-10%] right-[-5%] h-[450px] w-[450px] rounded-full bg-violet-300/20 blur-[120px] animate-orb-2 pointer-events-none"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-cyan-300/15 blur-[80px] animate-orb-1 pointer-events-none"
+        style={{ animationDelay: "4s" }}
+      />
+
+      {/* ── Subtle Dot grid texture overlay ── */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none opacity-[0.03]"
+        style={{
+          backgroundImage: "radial-gradient(circle, #0f172a 1px, transparent 1px)",
+          backgroundSize: "40px 40px",
+        }}
       />
 
       <RevealOnScroll>
-        <div className="grid grid-cols-1 md:grid-cols-2 items-center w-full max-w-7xl gap-y-12 md:gap-x-24">
-          {/* Left: Intro */}
-          <div className="space-y-6 md:pl-10">
-            <p className="text-base font-medium text-gray-700 dark:text-gray-300">
+        <div className="grid grid-cols-1 md:grid-cols-2 items-center w-full max-w-7xl gap-y-16 md:gap-x-20 relative z-10">
+          {/* ── Left: Intro ── */}
+          <div className="space-y-7">
+            {/* Role tag */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-sm font-semibold shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
               {homeData.roles}
-            </p>
+            </div>
 
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight text-gray-900 dark:text-white">
-              Hi, I’m{" "}
-              <span className="bg-gradient-to-r from-blue-700 via-indigo-500 to-purple-600 bg-clip-text text-transparent font-extrabold">
+            {/* Name headline */}
+            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight text-slate-900">
+              Hi, I'm{" "}
+              <span className="gradient-text">
                 {homeData.name}
               </span>
             </h1>
 
-            <p className="text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-xl">
+            {/* Tagline */}
+            <p className="text-lg md:text-xl text-slate-600 max-w-xl leading-relaxed font-medium">
               {homeData.headline}
             </p>
 
-            <div className="flex flex-wrap gap-2 pt-1 text-sm text-gray-600 dark:text-gray-300">
+            {/* Badges */}
+            <div className="flex flex-wrap gap-2 pt-1">
               {homeData.badges.map((badge, index) => (
                 <span
                   key={index}
-                  className="rounded-full border border-gray-200 bg-white px-3 py-1 shadow-sm dark:border-gray-700 dark:bg-gray-900"
+                  className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-medium text-slate-600 shadow-sm hover:border-blue-300 hover:text-blue-700 transition-all duration-200 cursor-default"
                 >
                   {badge}
                 </span>
               ))}
             </div>
 
-            <div className="flex flex-wrap gap-4 pt-4">
+            {/* CTAs */}
+            <div className="flex flex-wrap gap-4 pt-2">
               <a
                 href={homeData.cta.primary.href}
-                className="inline-flex items-center justify-center rounded-lg bg-blue-800 px-6 py-3 text-white font-semibold shadow-sm transition hover:bg-blue-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70"
+                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-7 py-3.5 text-white font-semibold shadow-[0_10px_20px_rgba(37,99,235,0.2)] hover:shadow-[0_15px_30px_rgba(37,99,235,0.3)] hover:bg-blue-700 hover:-translate-y-0.5 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 {homeData.cta.primary.label}
               </a>
-
               <a
                 href={homeData.cta.secondary.href}
-                className="inline-flex items-center justify-center rounded-lg border border-blue-800 px-6 py-3 text-blue-800 font-semibold shadow-sm transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 dark:border-blue-400 dark:text-blue-300 dark:hover:bg-blue-500/10"
+                className="inline-flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white/50 px-7 py-3.5 text-slate-700 font-semibold backdrop-blur-sm hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 hover:-translate-y-0.5 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
               >
                 {homeData.cta.secondary.label}
               </a>
             </div>
 
-            <div className="flex items-center gap-3 pt-3">
+            {/* Social Icons */}
+            <div className="flex items-center gap-4 pt-2">
               <a
                 href={homeData.social.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-blue-700 shadow-sm transition hover:scale-[1.05] hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-white/5"
+                aria-label="LinkedIn profile"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white text-blue-600 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-blue-300 hover:shadow-[0_10px_20px_rgba(37,99,235,0.15)]"
               >
                 <FaLinkedin className="text-xl" />
               </a>
-
               <a
                 href={homeData.social.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-neutral-900 shadow-sm transition hover:scale-[1.05] hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/50 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:hover:bg-white/5"
+                aria-label="GitHub profile"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:text-black hover:shadow-[0_10px_20px_rgba(0,0,0,0.1)]"
               >
                 <FaGithub className="text-xl" />
               </a>
-
               <a
                 href={homeData.social.email}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-white text-[#D14836] shadow-sm transition hover:scale-[1.05] hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40 dark:border-gray-700 dark:bg-gray-900 dark:hover:bg-white/5"
+                aria-label="Email Mihir"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white text-rose-500 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-rose-300 hover:shadow-[0_10px_20px_rgba(244,63,94,0.15)]"
               >
                 <HiOutlineMail className="text-2xl" />
               </a>
             </div>
           </div>
 
-          {/* Right: Image */}
-          <div className="relative flex justify-center md:justify-end md:pr-10">
-            <div
-              aria-hidden="true"
-              className="absolute -inset-6 rounded-[2rem] bg-gradient-to-tr from-blue-500/10 to-purple-500/10 blur-2xl"
-            />
+          {/* ── Right: Image + Stats ── */}
+          <div className="flex flex-col items-center md:items-end gap-10">
+            {/* Profile Image with refined shadow */}
+            <div className="relative">
+              {/* Soft decorative background blob */}
+              <div
+                aria-hidden="true"
+                className="absolute -inset-4 rounded-[3rem] bg-gradient-to-tr from-blue-200/50 to-violet-200/50 blur-xl mix-blend-multiply"
+              />
 
-            <img
-              src={homeData.image.src}
-              alt={homeData.image.alt}
-              width={homeData.image.width}
-              height={homeData.image.height}
-              className="relative w-[320px] md:w-[420px] h-auto object-cover rounded-2xl border border-gray-100 shadow-[0_14px_40px_rgba(0,0,0,0.16)] dark:border-gray-800"
-              loading="eager"
-              fetchpriority="high"
-              decoding="async"
-              referrerPolicy="no-referrer"
-            />
+              <img
+                src={homeData.image.src}
+                alt={homeData.image.alt}
+                width={homeData.image.width}
+                height={homeData.image.height}
+                className="relative w-[280px] md:w-[380px] h-auto object-cover rounded-[2.5rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)]"
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+
+
           </div>
         </div>
       </RevealOnScroll>

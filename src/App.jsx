@@ -11,8 +11,7 @@ import { Home } from "./components/sections/Home";
 import { Chatbot } from "./components/Chatbot";
 import ErrorBoundary from "./components/ErrorBoundary";
 
-// Lazy load below-the-fold sections for faster LCP (2026 optimization)
-// Components with named exports use .then() to convert to default
+// Lazy load below-the-fold sections for faster LCP
 const Projects = lazy(() => import("./components/sections/Projects").then(m => ({ default: m.Projects })));
 const Testimonials = lazy(() => import("./components/sections/Testimonials"));
 const Contact = lazy(() => import("./components/sections/Contact").then(m => ({ default: m.Contact })));
@@ -22,10 +21,13 @@ const Education = lazy(() => import("./components/sections/Education"));
 const Skills = lazy(() => import("./components/sections/Skills"));
 const AboutMe = lazy(() => import("./components/sections/AboutMe"));
 
-// Loading fallback component - extracted outside App to prevent re-creation (React Compiler optimization)
+// Loading fallback — clear, light-mode spinner
 const SectionLoader = () => (
-  <div className="flex items-center justify-center min-h-[200px]">
-    <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+  <div className="flex items-center justify-center min-h-[200px] bg-transparent">
+    <div className="relative w-10 h-10">
+      <div className="absolute inset-0 rounded-full border-2 border-slate-200" />
+      <div className="absolute inset-0 rounded-full border-2 border-t-blue-500 border-r-transparent border-b-transparent border-l-transparent animate-spin" />
+    </div>
   </div>
 );
 
@@ -33,7 +35,7 @@ function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
-  // 2026 optimization: Passive listener + startTransition for non-urgent scroll state
+  // Passive listener + startTransition for non-urgent scroll state
   useEffect(() => {
     const handleScroll = () => {
       startTransition(() => {
@@ -49,11 +51,10 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-neutral-900">
+    <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-200 selection:text-blue-900">
       <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
 
       <Routes>
-        {/* Home page (you can keep sections here if you want a long landing page) */}
         <Route
           path="/"
           element={
@@ -86,15 +87,24 @@ function App() {
 
       <Chatbot />
 
+      {/* Elegant scroll-to-top button */}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all"
+          className="fixed bottom-6 right-6 z-50 p-3.5 rounded-full bg-blue-600 text-white shadow-[0_10px_25px_rgba(37,99,235,0.4)] hover:shadow-[0_15px_35px_rgba(37,99,235,0.5)] hover:bg-blue-500 hover:-translate-y-1 transition-all duration-300"
           aria-label="Scroll to top"
         >
-          <FaArrowUp className="text-lg" />
+          <FaArrowUp className="text-base" />
         </button>
       )}
+
+      {/* Subtle Premium Noise Overlay */}
+      <div
+        className="fixed inset-0 z-0 pointer-events-none opacity-[0.015] mix-blend-overlay"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }}
+      />
     </div>
   );
 }

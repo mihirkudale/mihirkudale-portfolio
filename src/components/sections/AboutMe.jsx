@@ -6,39 +6,55 @@ const AboutMe = () => {
   return (
     <section
       id="about"
-      className="py-24 px-6 bg-gradient-to-b from-white to-blue-50 dark:from-gray-900 dark:to-gray-950 text-neutral-900 dark:text-white"
+      className="relative py-28 px-6 bg-white text-slate-900 overflow-hidden"
     >
+      {/* Subtle background blob */}
+      <div
+        aria-hidden="true"
+        className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-slate-100 blur-[100px] pointer-events-none"
+      />
+
       <RevealOnScroll>
-        <div className="max-w-5xl mx-auto text-center space-y-12">
-          <div className="space-y-4">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-center text-[#706eff] mb-12 tracking-tight">
+        <div className="max-w-5xl mx-auto space-y-16 relative z-10">
+          {/* Heading */}
+          <div className="text-center space-y-4">
+            <p className="text-sm font-bold text-blue-600 tracking-widest uppercase">
+              Get to know me
+            </p>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
               {aboutMeData.heading}
             </h2>
 
-            <p className="text-lg md:text-xl leading-relaxed text-gray-700 dark:text-gray-300 max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl leading-[1.85] text-slate-600 max-w-3xl mx-auto font-medium">
               I'm{" "}
-              <span className="font-semibold text-[#706eff] dark:text-[#22d3ee]">
+              <span className="font-bold text-blue-600 animated-underline cursor-default">
                 {aboutMeData.intro.name}
               </span>
               , a {aboutMeData.intro.location}{" "}
-              <span className="font-medium">
+              <span className="font-bold text-slate-900 animated-underline cursor-default">
                 {aboutMeData.intro.title}
               </span>{" "}
               with a strong focus on{" "}
-              <span className="font-medium">
+              <span className="font-bold text-violet-600 animated-underline cursor-default">
                 {aboutMeData.intro.focus}
               </span>
               . {aboutMeData.intro.description}
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-10 text-left">
+          {/* Cards grid */}
+          <div className="grid md:grid-cols-2 gap-8 text-left">
             {aboutMeData.sections.map((section, index) => (
-              <div key={index} className="space-y-4">
-                <h3 className="text-2xl font-semibold text-[#706eff] dark:text-[#22d3ee]">
+              <div
+                key={index}
+                className="glass-card p-8 space-y-4 border border-slate-100 bg-slate-50/50 group"
+              >
+                {/* Accent bar */}
+                <div className="h-1 w-12 rounded-full bg-blue-600 mb-2 group-hover:w-20 transition-all duration-500" />
+                <h3 className="text-2xl font-bold text-slate-900">
                   {section.title}
                 </h3>
-                <p className="text-base leading-relaxed text-gray-700 dark:text-gray-300">
+                <p className="text-base leading-[1.8] text-slate-600 font-medium">
                   {section.content}
                 </p>
               </div>
