@@ -20,4 +20,10 @@ export const educationList = [
     location: "Pune, India",
     duration: "2015",
   },
+  {
+    degree: "Secondary School Certificate (SSC)",
+    institution: "Symbiosis School",
+    location: "Pune, India",
+    duration: "2011",
+  },
 ];
