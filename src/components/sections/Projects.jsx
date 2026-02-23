@@ -5,7 +5,6 @@ import { FaGithub, FaExternalLinkAlt } from "react-icons/fa";
 import { allProjects, techFilters, techDescriptions } from "../../constants/projects";
 
 const MAX_VISIBLE_TAGS = 4;
-const DEMO_SUPPORTED_TECHS = ["Power BI", "Tableau"];
 
 const FallbackReveal = ({ children }) => <>{children}</>;
 FallbackReveal.propTypes = { children: PropTypes.node.isRequired };
@@ -24,8 +23,8 @@ export const Projects = () => {
     return matchesTech && matchesSearch;
   });
 
-  const shouldShowLiveDemo = (stack, demoUrl) =>
-    Boolean(demoUrl) && stack.some((tech) => DEMO_SUPPORTED_TECHS.includes(tech));
+  // Show live demo link for any project that has a valid demo URL
+  const shouldShowLiveDemo = (demoUrl) => Boolean(demoUrl && demoUrl.trim() !== "");
 
   return (
     <section
@@ -89,8 +88,8 @@ export const Projects = () => {
                 key={tech}
                 onClick={() => setActiveTech(tech)}
                 className={`px-5 py-2 rounded-full text-sm font-bold tracking-wide transition-all duration-300 border-2 ${activeTech === tech
-                    ? "bg-blue-600 text-white border-blue-600 shadow-[0_8px_16px_rgba(37,99,235,0.25)] -translate-y-0.5"
-                    : "bg-white text-slate-600 border-slate-200 hover:border-blue-200 hover:text-blue-700 hover:bg-blue-50"
+                  ? "bg-blue-600 text-white border-blue-600 shadow-[0_8px_16px_rgba(37,99,235,0.25)] -translate-y-0.5"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-blue-200 hover:text-blue-700 hover:bg-blue-50"
                   }`}
               >
                 {tech}
@@ -108,7 +107,8 @@ export const Projects = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProjects.map((project, index) => {
               const stack = project.stack ?? [];
-              const showLive = shouldShowLiveDemo(stack, project.demo);
+              const showLive = shouldShowLiveDemo(project.demo);
+              const hasGithub = Boolean(project.github && project.github.trim() !== "");
 
               return (
                 <div
@@ -145,27 +145,34 @@ export const Projects = () => {
                       )}
                     </div>
 
-                    {/* Links */}
-                    <div className="flex gap-5 items-center text-sm font-bold mt-auto pt-5 border-t-2 border-slate-100">
-                      {project.github && (
+                    {/* Links — relative + z-10 so gradient-border ::before pseudo-element doesn't intercept clicks */}
+                    <div className="relative z-10 flex gap-5 items-center text-sm font-bold mt-auto pt-5 border-t-2 border-slate-100">
+                      {hasGithub ? (
                         <a
                           href={project.github}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
+                          className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:underline transition-colors cursor-pointer"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <FaGithub className="text-lg" />
+                          <FaGithub className="text-lg shrink-0" />
                           View Code
                         </a>
+                      ) : (
+                        <span className="inline-flex items-center gap-2 text-slate-300 cursor-not-allowed text-xs font-medium">
+                          <FaGithub className="text-base shrink-0" />
+                          Private Repo
+                        </span>
                       )}
                       {showLive && (
                         <a
                           href={project.demo}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+                          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer ml-auto"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <FaExternalLinkAlt className="text-sm" />
+                          <FaExternalLinkAlt className="text-xs shrink-0" />
                           Live Demo
                         </a>
                       )}

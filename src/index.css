@@ -106,6 +106,9 @@ section {
   mask-composite: exclude;
   opacity: 0;
   transition: opacity 0.4s ease;
+  pointer-events: none;
+  /* Never block clicks on card content */
+  z-index: 0;
 }
 
 .gradient-border:hover {
