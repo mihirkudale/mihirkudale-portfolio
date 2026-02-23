@@ -2,7 +2,7 @@
 export const homeData = {
   name: "Mihir Kudale",
   roles: "Data Analyst • Data Scientist • Data Engineer • AI Engineer",
-  headline: "I build analytics + AI systems that turn messy data into clear decisions and intelligent products—at scale.",
+  headline: "I build analytics, AI systems that turn messy data into clear decisions and intelligent products—at scale.",
   badges: [
     "Ex-Amazon",
     "Microsoft Certified: PL-300 • DP-100 • AI-102",
