@@ -53,9 +53,11 @@ export function Chatbot() {
   const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [slowResponse, setSlowResponse] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const replyTimeoutRef = useRef(null);
+  const slowTimerRef = useRef(null);
   const dialogRef = useRef(null);
   const prefersReducedMotion = usePrefersReducedMotion();
 
@@ -132,8 +134,12 @@ export function Chatbot() {
     if (!text || loading) return;
 
     setInput("");
+    setSlowResponse(false);
     setMessages((prev) => [...prev, { id: nextMessageId(), role: "user", content: text }]);
     setLoading(true);
+
+    // Show 'still thinking' hint after 4s (catches cold starts)
+    slowTimerRef.current = setTimeout(() => setSlowResponse(true), 4000);
 
     try {
       const conversationHistory = messages.slice(-6).map(msg => ({
@@ -159,6 +165,8 @@ export function Chatbot() {
         { id: nextMessageId(), role: "bot", content: "Something went wrong. Please try again." },
       ]);
     } finally {
+      clearTimeout(slowTimerRef.current);
+      setSlowResponse(false);
       setLoading(false);
     }
   }, [input, loading, messages]);
@@ -267,8 +275,8 @@ export function Chatbot() {
               >
                 <div
                   className={`max-w-[85%] rounded-[1.25rem] px-4 py-3 text-[15px] shadow-sm ${msg.role === "user"
-                      ? "bg-blue-600 text-white rounded-br-sm shadow-[0_4px_14px_rgba(37,99,235,0.2)]"
-                      : "bg-white text-slate-700 rounded-bl-sm border border-slate-100/80 leading-relaxed font-medium"
+                    ? "bg-blue-600 text-white rounded-br-sm shadow-[0_4px_14px_rgba(37,99,235,0.2)]"
+                    : "bg-white text-slate-700 rounded-bl-sm border border-slate-100/80 leading-relaxed font-medium"
                     }`}
                 >
                   {msg.role === "bot" ? (
@@ -285,7 +293,7 @@ export function Chatbot() {
             ))}
 
             {loading && (
-              <div className="flex justify-start">
+              <div className="flex flex-col items-start gap-1">
                 <div className="bg-white rounded-[1.25rem] rounded-bl-sm px-5 py-3.5 border border-slate-100 shadow-sm">
                   <span className="inline-flex gap-1.5 align-middle">
                     <span className="w-2 h-2 rounded-full bg-blue-500/80 animate-bounce [animation-delay:0ms]" />
@@ -293,6 +301,11 @@ export function Chatbot() {
                     <span className="w-2 h-2 rounded-full bg-blue-500/80 animate-bounce [animation-delay:300ms]" />
                   </span>
                 </div>
+                {slowResponse && (
+                  <p className="text-xs text-slate-400 font-medium pl-1 animate-pulse">
+                    Still thinking… first response may take a moment ☕
+                  </p>
+                )}
               </div>
             )}
             <div ref={messagesEndRef} />

@@ -60,12 +60,12 @@ function buildSystemPrompt(data) {
     `  - ${cat}: ${items.join(', ')}`
   ).join('\n');
 
+  // Compact: title + stack + links only — keeps token count low for fast responses
   const projectList = projects.map(p => {
     const links = [];
     if (p.github) links.push(`GitHub: ${p.github}`);
     if (p.demo) links.push(`Live Demo: ${p.demo}`);
-    return `  - **${p.title}** [${p.stack.join(', ')}]${links.length ? ' | ' + links.join(' | ') : ''}
-    ${p.description}`;
+    return `  - ${p.title} [${p.stack.join(', ')}]${links.length ? ' | ' + links.join(' | ') : ''}`;
   }).join('\n');
 
   return `You are the portfolio assistant for ${about.name}'s personal website. Answer ONLY using the factual data below. If a fact is not in this data, say "I don't have that information — please reach out to ${about.name} directly via ${contact.email}." Never invent or guess.
@@ -131,10 +131,10 @@ async function getGroqResponse(userMessage, conversationHistory) {
   ];
 
   const response = await groqInstance.chat.completions.create({
-    model: 'llama-3.3-70b-versatile',
+    model: 'llama-3.1-8b-instant',  // 2–3x faster than 70B, sufficient for portfolio Q&A
     messages,
-    temperature: 0.2,  // Very low — maximally factual, minimal creativity
-    max_tokens: 512,
+    temperature: 0.2,
+    max_tokens: 400,
     top_p: 1,
   });
 
