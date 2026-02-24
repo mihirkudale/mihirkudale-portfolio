@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export const Navbar = ({ menuOpen, setMenuOpen }) => {
   const location = useLocation();
@@ -36,7 +37,10 @@ export const Navbar = ({ menuOpen, setMenuOpen }) => {
 
   return (
     <>
-      <nav
+      <motion.nav
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.1 }}
         className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${scrolled
           ? "bg-white/80 backdrop-blur-xl border-b border-slate-200 shadow-[0_4px_30px_rgba(0,0,0,0.03)]"
           : "bg-white/40 backdrop-blur-md border-b border-transparent"
@@ -103,7 +107,7 @@ export const Navbar = ({ menuOpen, setMenuOpen }) => {
             </button>
           </div>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* Mobile Menu Overlay */}
       <div

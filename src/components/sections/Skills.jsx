@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   FaReact,
   FaNodeJs,
@@ -109,7 +110,7 @@ const iconMap = {
 };
 
 const SkillBadge = ({ iconKey, name }) => (
-  <div className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-300 hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50 hover:shadow-[0_4px_12px_rgba(59,130,246,0.1)] hover:-translate-y-0.5 cursor-default">
+  <div className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-full text-sm font-medium transition-colors hover:border-blue-300 hover:text-blue-700 hover:bg-blue-50 cursor-default">
     {iconMap[iconKey]}
     <span>{name}</span>
   </div>
@@ -149,46 +150,59 @@ const Skills = () => {
         {/* Category Filter Tabs */}
         <div className="flex flex-wrap justify-center gap-2 mb-12">
           {categoryTitles.map((title) => (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
               key={title}
               onClick={() => setActiveCategory(title)}
               className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 border ${activeCategory === title
-                  ? "bg-blue-600 text-white border-blue-600 shadow-[0_8px_16px_rgba(37,99,235,0.25)] -translate-y-0.5"
-                  : "bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm"
+                ? "bg-blue-600 text-white border-blue-600 shadow-[0_8px_16px_rgba(37,99,235,0.25)] -translate-y-0.5"
+                : "bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600 hover:bg-blue-50 hover:shadow-sm"
                 }`}
             >
               {title}
-            </button>
+            </motion.button>
           ))}
         </div>
 
         {/* Skill Category Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-          {filteredCategories.map((category, index) => (
-            <div
-              key={index}
-              className="glass-card gradient-border p-8 bg-white/80 group"
-            >
-              {/* Title with accent */}
-              <div className="flex items-center gap-3 mb-6">
-                <div className="h-6 w-1.5 rounded-full bg-gradient-to-b from-blue-500 to-cyan-400" />
-                <h3 className="text-xl font-bold text-slate-900">
-                  {category.title}
-                </h3>
-              </div>
+        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+          <AnimatePresence mode="popLayout">
+            {filteredCategories.map((category, index) => (
+              <motion.div
+                layout
+                initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+                transition={{ duration: 0.4, delay: (index % 2) * 0.1, type: "spring" }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                key={category.title}
+                className="glass-card gradient-border p-8 bg-white/80 group"
+              >
+                {/* Title with accent */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="h-6 w-1.5 rounded-full bg-gradient-to-b from-blue-500 to-cyan-400" />
+                  <h3 className="text-xl font-bold text-slate-900">
+                    {category.title}
+                  </h3>
+                </div>
 
-              <div className="flex flex-wrap gap-2.5">
-                {category.skills.map((skill, i) => (
-                  <SkillBadge
-                    key={i}
-                    iconKey={skill.icon}
-                    name={skill.name}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+                <div className="flex flex-wrap gap-2.5">
+                  {category.skills.map((skill, i) => (
+                    <motion.div
+                      key={i}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    >
+                      <SkillBadge iconKey={skill.icon} name={skill.name} />
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </section>
   );

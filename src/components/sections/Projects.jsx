@@ -2,6 +2,7 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { FaGithub, FaExternalLinkAlt } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 import { allProjects, techFilters, techDescriptions } from "../../constants/projects";
 
 const MAX_VISIBLE_TAGS = 4;
@@ -84,7 +85,10 @@ export const Projects = () => {
           {/* Tech Filter Pills */}
           <div className="flex flex-wrap justify-center gap-2 mb-10">
             {techFilters.map((tech) => (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 key={tech}
                 onClick={() => setActiveTech(tech)}
                 className={`px-5 py-2 rounded-full text-sm font-bold tracking-wide transition-all duration-300 border-2 ${activeTech === tech
@@ -93,7 +97,7 @@ export const Projects = () => {
                   }`}
               >
                 {tech}
-              </button>
+              </motion.button>
             ))}
           </div>
 
@@ -104,84 +108,92 @@ export const Projects = () => {
           </p>
 
           {/* Project Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProjects.map((project, index) => {
-              const stack = project.stack ?? [];
-              const showLive = shouldShowLiveDemo(project.demo);
-              const hasGithub = Boolean(project.github && project.github.trim() !== "");
+          <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            <AnimatePresence mode="popLayout">
+              {filteredProjects.map((project, index) => {
+                const stack = project.stack ?? [];
+                const showLive = shouldShowLiveDemo(project.demo);
+                const hasGithub = Boolean(project.github && project.github.trim() !== "");
 
-              return (
-                <div
-                  key={`${project.title}-${index}`}
-                  className="group relative glass-card gradient-border flex flex-col overflow-hidden bg-slate-50/50 hover:bg-white"
-                >
-                  {/* Colorful subtle top bar */}
-                  <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-cyan-400 opacity-80 group-hover:opacity-100 transition-opacity" />
+                return (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                    whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.4, delay: (index % 3) * 0.1, type: "spring" }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    key={`${project.title}-${index}`}
+                    className="group relative glass-card gradient-border flex flex-col overflow-hidden bg-slate-50/50 hover:bg-white"
+                  >
+                    {/* Colorful subtle top bar */}
+                    <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-cyan-400 opacity-80 group-hover:opacity-100 transition-opacity" />
 
-                  {/* Card body */}
-                  <div className="p-8 flex flex-col flex-1">
-                    <h3 className="text-xl font-extrabold mb-3 text-slate-900 group-hover:text-blue-600 transition-colors duration-300">
-                      {project.title}
-                    </h3>
-                    <p className="text-base font-medium text-slate-600 mb-6 leading-relaxed flex-1">
-                      {project.description}
-                    </p>
+                    {/* Card body */}
+                    <div className="p-8 flex flex-col flex-1">
+                      <h3 className="text-xl font-extrabold mb-3 text-slate-900 group-hover:text-blue-600 transition-colors duration-300">
+                        {project.title}
+                      </h3>
+                      <p className="text-base font-medium text-slate-600 mb-6 leading-relaxed flex-1">
+                        {project.description}
+                      </p>
 
-                    {/* Tech Tags */}
-                    <div className="flex flex-wrap gap-2 mb-8">
-                      {stack.slice(0, MAX_VISIBLE_TAGS).map((tech, i) => (
-                        <span
-                          key={`${project.title}-tag-${tech}-${i}`}
-                          title={techDescriptions?.[tech] ?? tech}
-                          className="bg-blue-50 text-blue-700 border border-blue-100 py-1 px-3 rounded-lg text-xs font-bold"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                      {stack.length > MAX_VISIBLE_TAGS && (
-                        <span className="text-xs font-bold text-slate-500 bg-slate-100 py-1 px-2.5 rounded-lg border border-slate-200">
-                          +{stack.length - MAX_VISIBLE_TAGS} more
-                        </span>
-                      )}
+                      {/* Tech Tags */}
+                      <div className="flex flex-wrap gap-2 mb-8">
+                        {stack.slice(0, MAX_VISIBLE_TAGS).map((tech, i) => (
+                          <span
+                            key={`${project.title}-tag-${tech}-${i}`}
+                            title={techDescriptions?.[tech] ?? tech}
+                            className="bg-blue-50 text-blue-700 border border-blue-100 py-1 px-3 rounded-lg text-xs font-bold"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                        {stack.length > MAX_VISIBLE_TAGS && (
+                          <span className="text-xs font-bold text-slate-500 bg-slate-100 py-1 px-2.5 rounded-lg border border-slate-200">
+                            +{stack.length - MAX_VISIBLE_TAGS} more
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Links — relative + z-10 so gradient-border ::before pseudo-element doesn't intercept clicks */}
+                      <div className="relative z-10 flex gap-5 items-center text-sm font-bold mt-auto pt-5 border-t-2 border-slate-100">
+                        {hasGithub ? (
+                          <a
+                            href={project.github}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:underline transition-colors cursor-pointer"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <FaGithub className="text-lg shrink-0" />
+                            View Code
+                          </a>
+                        ) : (
+                          <span className="inline-flex items-center gap-2 text-slate-300 cursor-not-allowed text-xs font-medium">
+                            <FaGithub className="text-base shrink-0" />
+                            Private Repo
+                          </span>
+                        )}
+                        {showLive && (
+                          <a
+                            href={project.demo}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer ml-auto"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <FaExternalLinkAlt className="text-xs shrink-0" />
+                            Live Demo
+                          </a>
+                        )}
+                      </div>
                     </div>
-
-                    {/* Links — relative + z-10 so gradient-border ::before pseudo-element doesn't intercept clicks */}
-                    <div className="relative z-10 flex gap-5 items-center text-sm font-bold mt-auto pt-5 border-t-2 border-slate-100">
-                      {hasGithub ? (
-                        <a
-                          href={project.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:underline transition-colors cursor-pointer"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <FaGithub className="text-lg shrink-0" />
-                          View Code
-                        </a>
-                      ) : (
-                        <span className="inline-flex items-center gap-2 text-slate-300 cursor-not-allowed text-xs font-medium">
-                          <FaGithub className="text-base shrink-0" />
-                          Private Repo
-                        </span>
-                      )}
-                      {showLive && (
-                        <a
-                          href={project.demo}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer ml-auto"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <FaExternalLinkAlt className="text-xs shrink-0" />
-                          Live Demo
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </motion.div>
 
           {/* GitHub CTA */}
           <div className="mt-16 text-center">

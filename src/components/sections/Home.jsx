@@ -2,6 +2,7 @@ import { RevealOnScroll } from "../RevealOnScroll";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi";
 import { homeData } from "../../constants/home";
+import { motion } from "framer-motion";
 
 const stats = [
   { value: "3+", label: "Years Experience" },
@@ -50,12 +51,29 @@ export const Home = () => {
               {homeData.roles}
             </div>
 
-            {/* Name headline */}
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight text-slate-900">
-              Hi, I'm{" "}
-              <span className="gradient-text">
-                {homeData.name}
-              </span>
+            {/* Name headline - Kinetic Typography */}
+            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight text-slate-900 flex flex-wrap items-center gap-x-2">
+              <span className="mr-2">Hi, I'm</span>
+              <div className="flex space-x-[0.05em]">
+                {homeData.name.split("").map((char, index) => (
+                  <motion.span
+                    key={index}
+                    initial={{ opacity: 0, y: 15 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{
+                      duration: 0.5,
+                      delay: 0.2 + index * 0.05,
+                      type: "spring",
+                      stiffness: 150,
+                      damping: 10
+                    }}
+                    className="gradient-text inline-block"
+                  >
+                    {char === " " ? "\u00A0" : char}
+                  </motion.span>
+                ))}
+              </div>
             </h1>
 
             {/* Tagline */}
@@ -77,18 +95,24 @@ export const Home = () => {
 
             {/* CTAs */}
             <div className="flex flex-wrap gap-4 pt-2">
-              <a
+              <motion.a
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 href={homeData.cta.primary.href}
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-7 py-3.5 text-white font-semibold shadow-[0_10px_20px_rgba(37,99,235,0.2)] hover:shadow-[0_15px_30px_rgba(37,99,235,0.3)] hover:bg-blue-700 hover:-translate-y-0.5 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-7 py-3.5 text-white font-semibold shadow-[0_10px_20px_rgba(37,99,235,0.2)] hover:shadow-[0_15px_30px_rgba(37,99,235,0.3)] hover:bg-blue-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 {homeData.cta.primary.label}
-              </a>
-              <a
+              </motion.a>
+              <motion.a
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 href={homeData.cta.secondary.href}
-                className="inline-flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white/50 px-7 py-3.5 text-slate-700 font-semibold backdrop-blur-sm hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 hover:-translate-y-0.5 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+                className="inline-flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white/50 px-7 py-3.5 text-slate-700 font-semibold backdrop-blur-sm hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
               >
                 {homeData.cta.secondary.label}
-              </a>
+              </motion.a>
             </div>
 
             {/* Social Icons */}

@@ -1,6 +1,7 @@
 // App.jsx
 import { useState, useEffect, lazy, Suspense, startTransition } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import { FaArrowUp } from "react-icons/fa";
 
 import "./App.css";
@@ -34,6 +35,7 @@ const SectionLoader = () => (
 function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const location = useLocation();
 
   // Passive listener + startTransition for non-urgent scroll state
   useEffect(() => {
@@ -54,36 +56,38 @@ function App() {
     <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-200 selection:text-blue-900">
       <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
 
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <ErrorBoundary>
-              <Suspense fallback={<SectionLoader />}>
-                <Home />
-                <AboutMe />
-                <Skills />
-                <WorkExperience />
-                <Projects />
-                <Education />
-                <Certifications />
-                <Testimonials />
-                <Contact />
-              </Suspense>
-            </ErrorBoundary>
-          }
-        />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route
+            path="/"
+            element={
+              <ErrorBoundary>
+                <Suspense fallback={<SectionLoader />}>
+                  <Home />
+                  <AboutMe />
+                  <Skills />
+                  <WorkExperience />
+                  <Projects />
+                  <Education />
+                  <Certifications />
+                  <Testimonials />
+                  <Contact />
+                </Suspense>
+              </ErrorBoundary>
+            }
+          />
 
-        {/* Individual routes for each section */}
-        <Route path="/about" element={<Suspense fallback={<SectionLoader />}><AboutMe /></Suspense>} />
-        <Route path="/skills" element={<Suspense fallback={<SectionLoader />}><Skills /></Suspense>} />
-        <Route path="/experience" element={<Suspense fallback={<SectionLoader />}><WorkExperience /></Suspense>} />
-        <Route path="/projects" element={<Suspense fallback={<SectionLoader />}><Projects /></Suspense>} />
-        <Route path="/education" element={<Suspense fallback={<SectionLoader />}><Education /></Suspense>} />
-        <Route path="/certifications" element={<Suspense fallback={<SectionLoader />}><Certifications /></Suspense>} />
-        <Route path="/testimonials" element={<Suspense fallback={<SectionLoader />}><Testimonials /></Suspense>} />
-        <Route path="/contact" element={<Suspense fallback={<SectionLoader />}><Contact /></Suspense>} />
-      </Routes>
+          {/* Individual routes for each section */}
+          <Route path="/about" element={<Suspense fallback={<SectionLoader />}><AboutMe /></Suspense>} />
+          <Route path="/skills" element={<Suspense fallback={<SectionLoader />}><Skills /></Suspense>} />
+          <Route path="/experience" element={<Suspense fallback={<SectionLoader />}><WorkExperience /></Suspense>} />
+          <Route path="/projects" element={<Suspense fallback={<SectionLoader />}><Projects /></Suspense>} />
+          <Route path="/education" element={<Suspense fallback={<SectionLoader />}><Education /></Suspense>} />
+          <Route path="/certifications" element={<Suspense fallback={<SectionLoader />}><Certifications /></Suspense>} />
+          <Route path="/testimonials" element={<Suspense fallback={<SectionLoader />}><Testimonials /></Suspense>} />
+          <Route path="/contact" element={<Suspense fallback={<SectionLoader />}><Contact /></Suspense>} />
+        </Routes>
+      </AnimatePresence>
 
       <Chatbot />
 
