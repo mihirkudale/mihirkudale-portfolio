@@ -1,53 +1,98 @@
 /**
- * Vercel Serverless Function: LangGraph Agent Integration
+ * Vercel Serverless Function: LangGraph Agent with SSE Streaming
  *
- * Handles AI responses for the portfolio chatbot using a ReAct Agent architecture.
- * Upgraded for 2026 AI Agent standards: Uses Tool Calling and Stateful Graphs.
+ * 2026-standard agentic chatbot:
+ * - SSE streaming (token-by-token)
+ * - ReAct Agent with tool calling
+ * - Output guardrails (anti-hallucination)
+ * - Retry logic with backoff
+ * - Redis-backed rate limiting (Upstash)
+ * - LangSmith tracing (auto-enabled via env vars)
  *
  * Environment Variables Required:
  * - GROQ_API_KEY: Your Groq API key from https://console.groq.com
+ *
+ * Optional Environment Variables:
+ * - UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN: For production rate limiting
+ * - LANGCHAIN_TRACING_V2=true + LANGCHAIN_API_KEY + LANGCHAIN_PROJECT: For LangSmith tracing
  */
 
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
-// Load real portfolio data at startup (bundled with the function on Vercel)
+// Load real portfolio data at startup
 const portfolio = require('./data/portfolio.json');
 
-// --- Rate Limiting Strategy ---
-const rateLimitMap = new Map();
-const RATE_LIMIT = { maxRequests: 30, windowMs: 60000 };
+// Import production rate limiter (Redis + in-memory fallback)
+import { isRateLimited } from './lib/rateLimit.js';
 
-function isRateLimited(clientId) {
-  const now = Date.now();
-  const clientData = rateLimitMap.get(clientId) || { count: 0, resetTime: now + RATE_LIMIT.windowMs };
-  if (now > clientData.resetTime) {
-    clientData.count = 1;
-    clientData.resetTime = now + RATE_LIMIT.windowMs;
-  } else {
-    clientData.count++;
-  }
-  rateLimitMap.set(clientId, clientData);
-  return clientData.count > RATE_LIMIT.maxRequests;
-}
-
+// --- Input Sanitization ---
 function sanitizeInput(text) {
   if (typeof text !== 'string') return '';
   return text.trim().slice(0, 1000).replace(/[<>"`]/g, '');
 }
 
-// Global cached state so we don't re-instantiate LangChain objects per request
-let graphInstance = null;
+// --- Output Guardrails ---
+const BLOCKED_PHRASES = [
+  'i promise',
+  'guaranteed',
+  'mihir will start',
+  'mihir can start',
+  'he will join',
+  'he can join on',
+  'salary expectation',
+  'compensation',
+  'i am mihir',
+  'as mihir, i',
+  'my name is mihir',
+];
 
 /**
- * Initializes the LangGraph Agent.
- * This is loaded dynamically because serverless cold starts with heavy 
- * LangChain imports can sometimes be slow. We only init when needed.
+ * Validate agent output against guardrails.
+ * Returns the original text if clean, or a safe fallback if violations found.
  */
+function validateOutput(text) {
+  if (!text || typeof text !== 'string') return text;
+
+  const lower = text.toLowerCase();
+  for (const phrase of BLOCKED_PHRASES) {
+    if (lower.includes(phrase)) {
+      console.warn(`[Guardrail] Blocked phrase detected: "${phrase}"`);
+      return "I can share factual information about Mihir's portfolio, skills, and experience. For specific arrangements like availability or interviews, please reach out directly via the **Contact** section.";
+    }
+  }
+  return text;
+}
+
+// --- Retry Logic ---
+/**
+ * Retry an async function with exponential backoff.
+ * Only retries on transient errors (5xx, network).
+ */
+async function withRetry(fn, { maxRetries = 1, baseDelayMs = 1000 } = {}) {
+  let lastError;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      const isTransient = !err.status || err.status >= 500;
+      if (!isTransient || attempt === maxRetries) throw err;
+
+      const delay = baseDelayMs * Math.pow(2, attempt);
+      console.warn(`[Retry] Attempt ${attempt + 1} failed, retrying in ${delay}ms:`, err.message);
+      await new Promise(r => setTimeout(r, delay));
+    }
+  }
+  throw lastError;
+}
+
+// --- LangGraph Agent (cached singleton) ---
+let graphInstance = null;
+
 async function getGraph() {
   if (graphInstance) return graphInstance;
 
-  // Dynamically import LangChain dependencies
   const { ChatGroq } = await import('@langchain/groq');
   const { tool } = await import('@langchain/core/tools');
   const { z } = await import('zod');
@@ -55,12 +100,10 @@ async function getGraph() {
   const { HumanMessage, SystemMessage, AIMessage } = await import('@langchain/core/messages');
   const { ToolNode } = await import('@langchain/langgraph/prebuilt');
 
-  // --- 1. Define Tools (The Agent's "Hands") ---
-
+  // --- Tools ---
   const getPortfolioDataTool = tool(
     async ({ topic }) => {
       console.log(`[Tool] getPortfolioData called for topic: ${topic}`);
-      // Based on the topic, return the specific JSON slice to save tokens
       switch (topic.toLowerCase()) {
         case 'about': return JSON.stringify(portfolio.about);
         case 'contact': return JSON.stringify(portfolio.contact);
@@ -68,8 +111,7 @@ async function getGraph() {
         case 'experience': return JSON.stringify({ experience: portfolio.experience });
         case 'certifications': return JSON.stringify({ certifications: portfolio.certifications });
         case 'skills': return JSON.stringify({ skills: portfolio.skills });
-        case 'projects': 
-          // Compress projects to save tokens
+        case 'projects':
           const compressed = portfolio.projects.map(p => ({
             title: p.title,
             stack: p.stack,
@@ -77,7 +119,7 @@ async function getGraph() {
             demo: p.demo || 'N/A'
           }));
           return JSON.stringify({ projects: compressed });
-        case 'all': // Try to avoid this, but fallback if needed
+        case 'all':
         default:
           return `Please search for a specific topic: about, contact, education, experience, certifications, skills, or projects.`;
       }
@@ -105,47 +147,48 @@ async function getGraph() {
   const tools = [getPortfolioDataTool, checkAvailabilityTool];
   const toolNode = new ToolNode(tools);
 
-  // --- 2. Define the LLM (The Agent's "Brain") ---
-
+  // --- LLM ---
   const llm = new ChatGroq({
     apiKey: process.env.GROQ_API_KEY,
-    modelName: 'llama-3.1-8b-instant', // Fast, supports tool calling natively
-    temperature: 0.2, // Keep interpretations strict
+    modelName: 'llama-3.1-8b-instant',
+    temperature: 0.2,
   });
 
   const llmWithTools = llm.bindTools(tools);
 
-  // --- 3. Define the Agent Logic (The Graph Nodes) ---
+  // --- System Prompt (strengthened guardrails) ---
+  const IDENTITY_PROMPT = new SystemMessage(`You are the official AI Agent for Mihir Kudale's portfolio website.
 
-  // The system prompt sets the behavioral boundaries for the agent.
-  const IDENTIY_PROMPT = new SystemMessage(`You are the official AI Agent for Mihir Kudale's portfolio website. 
-Your job is to answer visitor questions by calling the \`get_portfolio_data\` tool.
-NEVER make up facts, dates, companies, or projects. If a user asks a question about Mihir, ALWAYS call the tool to get the real data first before answering.
-Be friendly, concise, and professional. Use markdown for readability (bullet points, bold text).
-If the user asks an unrelated technical question, politely pivot back to Mihir's skills and projects.`);
+CORE RULES:
+1. ALWAYS call the \`get_portfolio_data\` tool before answering any question about Mihir. NEVER make up facts, dates, companies, projects, or skills.
+2. If the tool returns data, base your answer ONLY on that data. Do not embellish or add information not present in the tool response.
+3. NEVER impersonate Mihir. You are his AI assistant, not Mihir himself. Always refer to him in the third person.
+4. NEVER make promises about Mihir's availability, start dates, salary, or any commitments on his behalf.
+5. If asked about something not in the portfolio data, say you don't have that information and suggest contacting Mihir directly.
+6. If the user asks an unrelated technical question, politely pivot back to Mihir's skills and projects.
 
-  // The main decision-making node
+STYLE:
+- Be friendly, concise, and professional.
+- Use markdown for readability (bullet points, bold text).
+- Keep responses under 200 words unless the user asks for detail.`);
+
+  // --- Graph Nodes ---
   const callModel = async (state) => {
-    // We prepend the identity prompt to the dynamic conversation messages
-    const messages = [IDENTIY_PROMPT, ...state.messages];
+    const messages = [IDENTITY_PROMPT, ...state.messages];
     const response = await llmWithTools.invoke(messages);
     return { messages: [response] };
   };
 
-  // The routing function that decides what node runs next
   const routeNode = (state) => {
     const messages = state.messages;
     const lastMessage = messages[messages.length - 1];
-
-    // If the LLM decided to call a tool, route to the ToolNode
     if (lastMessage.tool_calls && lastMessage.tool_calls.length > 0) {
       return "tools";
     }
-    // Otherwise, it has finished thinking, end the graph.
     return END;
   };
 
-  // --- 4. Build the StateGraph ---
+  // --- Build Graph ---
   const workflow = new StateGraph(MessagesAnnotation)
     .addNode("agent", callModel)
     .addNode("tools", toolNode)
@@ -153,16 +196,19 @@ If the user asks an unrelated technical question, politely pivot back to Mihir's
     .addConditionalEdges("agent", routeNode)
     .addEdge("tools", "agent");
 
-  // Compile the graph into an executable app
   graphInstance = workflow.compile();
-  
-  // Expose the HumanMessage formatter so the handler can use it
   graphInstance.formatHumanMessage = (content) => new HumanMessage(content);
   graphInstance.formatAIMessage = (content) => new AIMessage(content);
 
   return graphInstance;
 }
 
+// --- SSE Helpers ---
+function sseEvent(event, data) {
+  return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+}
+
+// --- Main Handler ---
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGIN || '*');
@@ -173,15 +219,16 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
 
   try {
-    const { message, conversationHistory = [] } = req.body;
+    const { message, conversationHistory = [], stream: useStream = true } = req.body;
 
     if (!message || typeof message !== 'string') {
       res.status(400).json({ error: 'Invalid message' });
       return;
     }
 
+    // Rate limiting (async — supports Redis)
     const clientId = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
-    if (isRateLimited(clientId)) {
+    if (await isRateLimited(clientId)) {
       res.status(429).json({ error: 'Rate limit exceeded', useRuleBased: true });
       return;
     }
@@ -193,12 +240,10 @@ export default async function handler(req, res) {
     }
 
     const sanitized = sanitizeInput(message);
-
-    // --- Execute the LangGraph Agent ---
     const app = await getGraph();
 
     // Reconstruct history into LangChain Message objects
-    const formattedHistory = conversationHistory.map(msg => 
+    const formattedHistory = conversationHistory.map(msg =>
       msg.role === 'user' ? app.formatHumanMessage(msg.content) : app.formatAIMessage(msg.content)
     );
 
@@ -207,15 +252,59 @@ export default async function handler(req, res) {
     };
 
     console.log(`[Agent] Starting execution for query: "${sanitized}"`);
-    
-    // Invoke the graph. This will loop internally if tools are called.
-    const result = await app.invoke(inputs);
-    
-    // The final state of `messages` contains the entire thread of the loop.
-    // The very last message in the array is the LLM's final response to the user.
-    const finalMessage = result.messages[result.messages.length - 1];
 
-    res.status(200).json({ reply: finalMessage.content, useRuleBased: false, error: null });
+    // --- Streaming path (SSE) ---
+    if (useStream) {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+
+      let fullContent = '';
+      let hasError = false;
+
+      try {
+        await withRetry(async () => {
+          const stream = await app.stream(inputs, { streamMode: "messages" });
+
+          for await (const [messageChunk, metadata] of stream) {
+            // Only stream AI message content tokens (not tool calls/results)
+            if (
+              messageChunk._getType?.() === 'ai' &&
+              messageChunk.content &&
+              typeof messageChunk.content === 'string' &&
+              !messageChunk.tool_calls?.length &&
+              metadata?.langgraph_node === 'agent'
+            ) {
+              fullContent += messageChunk.content;
+              res.write(sseEvent('token', { content: messageChunk.content }));
+            }
+          }
+        });
+
+        // Apply guardrails to the full response
+        const validated = validateOutput(fullContent);
+        if (validated !== fullContent) {
+          // Guardrail triggered — send replacement
+          res.write(sseEvent('guardrail', { content: validated }));
+        }
+
+        res.write(sseEvent('done', { source: 'api' }));
+      } catch (error) {
+        hasError = true;
+        console.error('[Agent] Stream error:', error.message);
+        res.write(sseEvent('error', { error: error.message, useRuleBased: true }));
+      }
+
+      res.end();
+      return;
+    }
+
+    // --- Non-streaming fallback path ---
+    const result = await withRetry(async () => app.invoke(inputs));
+    const finalMessage = result.messages[result.messages.length - 1];
+    const validated = validateOutput(finalMessage.content);
+
+    res.status(200).json({ reply: validated, useRuleBased: false, source: 'api', error: null });
 
   } catch (error) {
     console.error('Chat API error:', error);

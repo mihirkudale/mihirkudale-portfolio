@@ -1,17 +1,15 @@
 /**
- * Portfolio chatbot – theme-matched, rule-based, no external API.
- * Config: src/constants/chatbot.js. Logic: src/utils/chatbotLogic.js.
+ * Portfolio chatbot – 2026 Standard
  * 
- * Accessibility features:
- * - Escape key closes chat
- * - Focus trapped in chat when open
- * - ARIA live region for new messages
- * - Proper dialog role and labels
+ * Features:
+ * - SSE streaming (token-by-token rendering)
+ * - Source attribution badges (AI Agent vs Rule-based)
+ * - Conversation persistence (survives close, clears on page refresh)
+ * - Expanded context window (20 messages)
+ * - Accessibility: Escape, focus trap, ARIA, reduced motion
  * 
- * 2026 Light Mode Design:
- * - Premium Apple-style glassmorphism
- * - Soft drop-shadows
- * - Crisp slate/white containers with blue accents
+ * Config: src/constants/chatbot.js
+ * Logic: src/utils/chatbotLogic.js
  */
 import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import PropTypes from "prop-types";
@@ -48,17 +46,39 @@ function usePrefersReducedMotion() {
   return prefersReducedMotion;
 }
 
+/** Source badge component */
+function SourceBadge({ source }) {
+  if (!source) return null;
+
+  const isAI = source === 'api';
+  return (
+    <span
+      className={`inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase ${isAI
+          ? 'bg-blue-50 text-blue-600 border border-blue-100'
+          : 'bg-slate-50 text-slate-400 border border-slate-100'
+        }`}
+    >
+      {isAI ? '🤖 AI Agent' : '📋 Rule-based'}
+    </span>
+  );
+}
+
+SourceBadge.propTypes = {
+  source: PropTypes.string,
+};
+
 export function Chatbot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState(initialMessages);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [streaming, setStreaming] = useState(false);
   const [slowResponse, setSlowResponse] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-  const replyTimeoutRef = useRef(null);
   const slowTimerRef = useRef(null);
   const dialogRef = useRef(null);
+  const streamingMsgIdRef = useRef(null);
   const prefersReducedMotion = usePrefersReducedMotion();
 
   const scrollToBottom = useCallback(() => {
@@ -117,16 +137,11 @@ export function Chatbot() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
+  // Conversation persists on close — only resets on page refresh
   const handleClose = useCallback(() => {
     setOpen(false);
     setInput("");
-    setMessages(initialMessages);
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (replyTimeoutRef.current) clearTimeout(replyTimeoutRef.current);
-    };
+    // Messages are NOT reset — they persist until page refresh
   }, []);
 
   const sendMessage = useCallback(async () => {
@@ -141,33 +156,76 @@ export function Chatbot() {
     // Show 'still thinking' hint after 4s (catches cold starts)
     slowTimerRef.current = setTimeout(() => setSlowResponse(true), 4000);
 
+    // Create a placeholder bot message for streaming
+    const botMsgId = nextMessageId();
+    streamingMsgIdRef.current = botMsgId;
+
     try {
-      const conversationHistory = messages.slice(-6).map(msg => ({
+      // Use last 20 messages for context (up from 6)
+      const conversationHistory = messages.slice(-20).map(msg => ({
         role: msg.role === 'user' ? 'user' : 'assistant',
         content: msg.content,
       }));
 
-      const { reply, source } = await getChatbotReplyAsync(text, conversationHistory);
-
+      // Add empty bot message that we'll stream into
       setMessages((prev) => [
         ...prev,
-        {
-          id: nextMessageId(),
-          role: "bot",
-          content: reply,
-          source
-        }
+        { id: botMsgId, role: "bot", content: "", source: null, isStreaming: true }
       ]);
+      setStreaming(true);
+
+      const { reply, source } = await getChatbotReplyAsync(
+        text,
+        conversationHistory,
+        // onToken callback — progressively update the bot message
+        (token, fullReplacement) => {
+          clearTimeout(slowTimerRef.current);
+          setSlowResponse(false);
+
+          setMessages((prev) =>
+            prev.map((msg) => {
+              if (msg.id !== botMsgId) return msg;
+              return {
+                ...msg,
+                // If fullReplacement is provided (guardrail), replace entirely
+                content: fullReplacement || (msg.content + token),
+              };
+            })
+          );
+        }
+      );
+
+      // Finalize the message with source badge
+      setMessages((prev) =>
+        prev.map((msg) => {
+          if (msg.id !== botMsgId) return msg;
+          return {
+            ...msg,
+            content: reply || msg.content,
+            source,
+            isStreaming: false,
+          };
+        })
+      );
     } catch (error) {
       console.error('Chat error:', error);
-      setMessages((prev) => [
-        ...prev,
-        { id: nextMessageId(), role: "bot", content: "Something went wrong. Please try again." },
-      ]);
+      setMessages((prev) => {
+        // If we already have the streaming placeholder, update it
+        const hasPlaceholder = prev.some(m => m.id === botMsgId);
+        if (hasPlaceholder) {
+          return prev.map(msg => {
+            if (msg.id !== botMsgId) return msg;
+            return { ...msg, content: "Something went wrong. Please try again.", isStreaming: false, source: 'error' };
+          });
+        }
+        return [...prev, { id: nextMessageId(), role: "bot", content: "Something went wrong. Please try again.", source: 'error' }];
+      });
     } finally {
       clearTimeout(slowTimerRef.current);
       setSlowResponse(false);
       setLoading(false);
+      setStreaming(false);
+      streamingMsgIdRef.current = null;
     }
   }, [input, loading, messages]);
 
@@ -178,31 +236,59 @@ export function Chatbot() {
       setMessages((prev) => [...prev, { id: nextMessageId(), role: "user", content: q }]);
       setLoading(true);
 
+      const botMsgId = nextMessageId();
+      streamingMsgIdRef.current = botMsgId;
+
       try {
-        const conversationHistory = messages.slice(-6).map(msg => ({
+        const conversationHistory = messages.slice(-20).map(msg => ({
           role: msg.role === 'user' ? 'user' : 'assistant',
           content: msg.content,
         }));
 
-        const { reply, source } = await getChatbotReplyAsync(q, conversationHistory);
-
         setMessages((prev) => [
           ...prev,
-          {
-            id: nextMessageId(),
-            role: "bot",
-            content: reply,
-            source
-          }
+          { id: botMsgId, role: "bot", content: "", source: null, isStreaming: true }
         ]);
+        setStreaming(true);
+
+        const { reply, source } = await getChatbotReplyAsync(
+          q,
+          conversationHistory,
+          (token, fullReplacement) => {
+            setMessages((prev) =>
+              prev.map((msg) => {
+                if (msg.id !== botMsgId) return msg;
+                return {
+                  ...msg,
+                  content: fullReplacement || (msg.content + token),
+                };
+              })
+            );
+          }
+        );
+
+        setMessages((prev) =>
+          prev.map((msg) => {
+            if (msg.id !== botMsgId) return msg;
+            return { ...msg, content: reply || msg.content, source, isStreaming: false };
+          })
+        );
       } catch (error) {
         console.error('Chat error:', error);
-        setMessages((prev) => [
-          ...prev,
-          { id: nextMessageId(), role: "bot", content: "Something went wrong. Please try again." },
-        ]);
+        setMessages((prev) => {
+          const hasPlaceholder = prev.some(m => m.id === botMsgId);
+          if (hasPlaceholder) {
+            return prev.map(msg => {
+              if (msg.id !== botMsgId) return msg;
+              return { ...msg, content: "Something went wrong. Please try again.", isStreaming: false, source: 'error' };
+            });
+          }
+          return [...prev, { id: nextMessageId(), role: "bot", content: "Something went wrong. Please try again.", source: 'error' }];
+        });
       } finally {
         setLoading(false);
+        setStreaming(false);
+        streamingMsgIdRef.current = null;
       }
     };
 
@@ -249,7 +335,7 @@ export function Chatbot() {
                 <h3 id="chatbot-title" className="font-bold text-[15px] text-slate-900 leading-tight">
                   {chatbotConfig.botName}
                 </h3>
-                <p className="text-xs font-semibold text-slate-500">Replies instantly</p>
+                <p className="text-xs font-semibold text-slate-500">AI-powered</p>
               </div>
             </div>
             <button
@@ -273,26 +359,41 @@ export function Chatbot() {
                 key={msg.id}
                 className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
-                <div
-                  className={`max-w-[85%] rounded-[1.25rem] px-4 py-3 text-[15px] shadow-sm ${msg.role === "user"
-                    ? "bg-blue-600 text-white rounded-br-sm shadow-[0_4px_14px_rgba(37,99,235,0.2)]"
-                    : "bg-white text-slate-700 rounded-bl-sm border border-slate-100/80 leading-relaxed font-medium"
-                    }`}
-                >
-                  {msg.role === "bot" ? (
-                    <div className="prose prose-sm max-w-none text-slate-700 font-medium leading-[1.6] [&_a]:text-blue-600 [&_a]:underline [&_strong]:text-slate-900 [&_strong]:font-bold">
-                      <Suspense fallback={<span>{msg.content}</span>}>
-                        <ReactMarkdown>{msg.content}</ReactMarkdown>
-                      </Suspense>
-                    </div>
-                  ) : (
-                    <span>{msg.content}</span>
+                <div className="flex flex-col max-w-[85%]">
+                  <div
+                    className={`rounded-[1.25rem] px-4 py-3 text-[15px] shadow-sm ${msg.role === "user"
+                      ? "bg-blue-600 text-white rounded-br-sm shadow-[0_4px_14px_rgba(37,99,235,0.2)]"
+                      : "bg-white text-slate-700 rounded-bl-sm border border-slate-100/80 leading-relaxed font-medium"
+                      }`}
+                  >
+                    {msg.role === "bot" ? (
+                      <div className="prose prose-sm max-w-none text-slate-700 font-medium leading-[1.6] [&_a]:text-blue-600 [&_a]:underline [&_strong]:text-slate-900 [&_strong]:font-bold">
+                        {msg.content ? (
+                          <Suspense fallback={<span>{msg.content}</span>}>
+                            <ReactMarkdown>{msg.content}</ReactMarkdown>
+                          </Suspense>
+                        ) : (
+                          /* Empty streaming placeholder — show cursor blink */
+                          <span className="inline-block w-1.5 h-4 bg-blue-500 rounded-sm animate-pulse" />
+                        )}
+                        {/* Streaming cursor */}
+                        {msg.isStreaming && msg.content && (
+                          <span className="inline-block w-1.5 h-4 bg-blue-500 rounded-sm animate-pulse ml-0.5 align-middle" />
+                        )}
+                      </div>
+                    ) : (
+                      <span>{msg.content}</span>
+                    )}
+                  </div>
+                  {/* Source attribution badge */}
+                  {msg.role === "bot" && !msg.isStreaming && msg.source && (
+                    <SourceBadge source={msg.source} />
                   )}
                 </div>
               </div>
             ))}
 
-            {loading && (
+            {loading && !streaming && (
               <div className="flex flex-col items-start gap-1">
                 <div className="bg-white rounded-[1.25rem] rounded-bl-sm px-5 py-3.5 border border-slate-100 shadow-sm">
                   <span className="inline-flex gap-1.5 align-middle">

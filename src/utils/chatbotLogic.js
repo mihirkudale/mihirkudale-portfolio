@@ -1,6 +1,10 @@
 /**
- * Rule-based chatbot logic – portfolio data only, no external API.
- * Uses all src/constants/*. Add or edit intents here to change bot behavior.
+ * Chatbot logic – SSE streaming with rule-based fallback.
+ * 
+ * 2026 Standard: Streams AI tokens from the backend SSE endpoint.
+ * Falls back to local rule-based matching when the API is unavailable.
+ * 
+ * Config: src/constants/chatbot.js
  */
 import { aboutMeData } from "../constants/aboutme";
 import { contactConfig } from "../constants/contacts";
@@ -22,7 +26,7 @@ const linkedin = contactConfig?.socials?.linkedin ?? "";
 const github = contactConfig?.socials?.github ?? "";
 const availability = contactConfig?.availabilityText ?? "";
 
-/** Match keyword: whole-word for short words (e.g. "hi") so "mihir" doesn't match "hi" */
+/** Match keyword: whole-word for short words so "mihir" doesn't match "hi" */
 function matches(normalized, keyword) {
   if (keyword.length <= 3) {
     const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -31,7 +35,7 @@ function matches(normalized, keyword) {
   return normalized.includes(keyword);
 }
 
-// Intent keywords (lowercase) → response builder. Order matters: first match wins.
+// Intent keywords → response builder. Order matters: first match wins.
 const intents = [
   {
     keywords: ["hi", "hello", "hey", "hola", "good morning", "good evening", "howdy", "greetings", "sup", "yo"],
@@ -90,7 +94,6 @@ const intents = [
       return `Here are ${name}'s main skill areas:\n\n${list}\n\nCheck the **Skills** section on the site for more detail.`;
     },
   },
-  // Specific project categories FIRST (before general projects)
   {
     keywords: ["python project", "python projects", "show python"],
     response: () => {
@@ -123,7 +126,6 @@ const intents = [
       return `${name}'s Tableau visualizations:\n\n${lines.join("\n")}\n\nSee the **Projects** section for demos.`;
     },
   },
-  // General projects intent (after specific categories)
   {
     keywords: ["project", "projects", "work", "portfolio", "what have you built", "dashboards"],
     response: () => {
@@ -173,37 +175,27 @@ const intents = [
   },
 ];
 
-/**
- * Common typo corrections for portfolio-related words
- */
+// --- Typo corrections ---
 const TYPO_CORRECTIONS = {
-  // Skills
   "skilz": "skills", "skils": "skills", "skilss": "skills",
   "tecnology": "technology", "tec": "tech", "tecnologies": "technologies",
-  // Projects
   "projet": "project", "projcts": "projects", "projecst": "projects",
   "pyhton": "python", "pythn": "python", "phyton": "python",
   "powerbi": "power bi", "powebi": "power bi", "pwer bi": "power bi",
   "tableu": "tableau", "tabluea": "tableau", "tabelau": "tableau",
-  // Experience
   "experiance": "experience", "expereince": "experience", "exprience": "experience",
   "experince": "experience", "experienc": "experience",
-  // Education
   "educaton": "education", "educatn": "education", "eductaion": "education",
-  // Certifications
   "certifcations": "certifications", "certificatons": "certifications",
   "certifcates": "certifications", "certs": "certifications",
-  // Contact
   "contct": "contact", "conact": "contact", "cotact": "contact",
   "emal": "email", "emial": "email", "mail": "email",
   "linkdin": "linkedin", "linkin": "linkedin",
-  // Common
   "mihri": "mihir", "mihr": "mihir",
   "abot": "about", "abut": "about",
   "helo": "hello", "hallo": "hello",
 };
 
-// Pre-compile regexes at module load for O(1) lookup (2026 optimization)
 const COMPILED_TYPO_REGEXES = Object.entries(TYPO_CORRECTIONS).map(
   ([typo, correction]) => ({
     regex: new RegExp(`\\b${typo}\\b`, "gi"),
@@ -212,10 +204,7 @@ const COMPILED_TYPO_REGEXES = Object.entries(TYPO_CORRECTIONS).map(
 );
 
 /**
- * Normalize user input for intent matching (lowercase, single spaces, trimmed).
- * Also fixes common typos using pre-compiled regexes.
- * @param {string} text - Raw user message
- * @returns {string} Normalized string
+ * Normalize user input for intent matching.
  */
 export function normalizeInput(text) {
   if (typeof text !== "string") return "";
@@ -225,7 +214,6 @@ export function normalizeInput(text) {
     .replace(/\s+/g, " ")
     .trim();
 
-  // Fix common typos using pre-compiled regexes
   for (const { regex, correction } of COMPILED_TYPO_REGEXES) {
     normalized = normalized.replace(regex, correction);
   }
@@ -242,28 +230,30 @@ const FALLBACK_REPLY = `I didn't quite get that. Try asking about **${name}** �
 const EMPTY_INPUT_REPLY = `Ask about ${name} – e.g. "Who is Mihir?", "Education?", "Work experience?", "Certifications?", or "How to contact?"`;
 
 /**
- * Get a reply from Groq API (with rule-based fallback)
+ * Get a reply via SSE streaming from the AI agent backend,
+ * with rule-based fallback when the API is unavailable.
+ * 
  * @param {string} userMessage - Raw user input
  * @param {Array} conversationHistory - Previous messages for context
+ * @param {Function} onToken - Callback invoked with each streamed token chunk: (token: string) => void
  * @returns {Promise<{reply: string, source: 'api' | 'rule-based' | 'error'}>}
  */
-export async function getChatbotReplyAsync(userMessage, conversationHistory = []) {
+export async function getChatbotReplyAsync(userMessage, conversationHistory = [], onToken = null) {
   try {
     const normalized = normalizeInput(userMessage);
     if (!normalized) {
       return { reply: EMPTY_INPUT_REPLY, source: 'rule-based' };
     }
 
-    // Try Groq API first
+    // Try SSE streaming API first
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMessage,
           conversationHistory,
+          stream: !!onToken, // Only stream if caller supports it
         }),
       });
 
@@ -271,19 +261,20 @@ export async function getChatbotReplyAsync(userMessage, conversationHistory = []
         throw new Error(`API error: ${response.status}`);
       }
 
-      const data = await response.json();
+      // --- Streaming path ---
+      if (onToken && response.headers.get('content-type')?.includes('text/event-stream')) {
+        return await consumeSSEStream(response, onToken);
+      }
 
-      // If API returns useRuleBased flag (rate limited, not configured, etc.)
+      // --- Non-streaming fallback ---
+      const data = await response.json();
       if (data.useRuleBased || !data.reply) {
         return getDefaultReply(normalized);
       }
+      return { reply: data.reply, source: data.source || 'api' };
 
-      return {
-        reply: data.reply,
-        source: 'api',
-      };
     } catch (apiError) {
-      console.warn('Groq API unavailable, using rule-based fallback:', apiError.message);
+      console.warn('API unavailable, using rule-based fallback:', apiError.message);
       return getDefaultReply(normalized);
     }
   } catch (error) {
@@ -292,6 +283,74 @@ export async function getChatbotReplyAsync(userMessage, conversationHistory = []
       reply: "Something went wrong on my side. Please try again or use the Contact section.",
       source: 'error',
     };
+  }
+}
+
+/**
+ * Consume an SSE stream from the backend, invoking onToken for each chunk.
+ * Returns the full accumulated reply when done.
+ */
+async function consumeSSEStream(response, onToken) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let fullContent = '';
+  let source = 'api';
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      // Parse SSE events from buffer
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+      let eventType = '';
+      for (const line of lines) {
+        if (line.startsWith('event: ')) {
+          eventType = line.slice(7).trim();
+        } else if (line.startsWith('data: ')) {
+          const dataStr = line.slice(6);
+          try {
+            const data = JSON.parse(dataStr);
+
+            switch (eventType) {
+              case 'token':
+                fullContent += data.content;
+                onToken(data.content);
+                break;
+              case 'guardrail':
+                // Replace entire content with safe version
+                fullContent = data.content;
+                onToken(null, data.content); // Signal full replacement
+                break;
+              case 'done':
+                source = data.source || 'api';
+                break;
+              case 'error':
+                throw new Error(data.error || 'Stream error');
+            }
+          } catch (parseErr) {
+            if (parseErr.message === 'Stream error' || parseErr.message?.startsWith('API')) {
+              throw parseErr;
+            }
+            // Ignore JSON parse errors for incomplete data
+          }
+          eventType = '';
+        }
+      }
+    }
+
+    return { reply: fullContent, source };
+  } catch (err) {
+    // If we got partial content, return it; otherwise throw
+    if (fullContent.length > 0) {
+      return { reply: fullContent, source: 'api' };
+    }
+    throw err;
   }
 }
 
