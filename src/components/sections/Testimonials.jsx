@@ -1,5 +1,5 @@
 // src/components/sections/Testimonials.jsx
-import { RevealOnScroll } from "../RevealOnScroll";
+import { motion } from "framer-motion";
 import { FaLinkedin, FaQuoteLeft } from "react-icons/fa";
 import { testimonials, getInitials } from "../../constants/testimonials";
 
@@ -19,7 +19,12 @@ export const Testimonials = () => {
         className="absolute bottom-0 right-0 w-[350px] h-[350px] rounded-full bg-slate-50/80 blur-[100px] pointer-events-none"
       />
 
-      <RevealOnScroll>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.5, type: "spring" }}
+      >
         <div className="max-w-7xl mx-auto relative z-10">
           {/* Header */}
           <div className="text-center mb-16 space-y-3">
@@ -87,7 +92,7 @@ export const Testimonials = () => {
             ))}
           </div>
         </div>
-      </RevealOnScroll>
+      </motion.div>
     </section>
   );
 };

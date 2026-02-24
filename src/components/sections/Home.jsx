@@ -1,4 +1,4 @@
-import { RevealOnScroll } from "../RevealOnScroll";
+
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi";
 import { homeData } from "../../constants/home";
@@ -41,7 +41,12 @@ export const Home = () => {
         }}
       />
 
-      <RevealOnScroll>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.5, type: "spring" }}
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 items-center w-full max-w-7xl gap-y-16 md:gap-x-20 relative z-10">
           {/* ── Left: Intro ── */}
           <div className="space-y-7">
@@ -171,7 +176,7 @@ export const Home = () => {
 
           </div>
         </div>
-      </RevealOnScroll>
+      </motion.div>
     </section>
   );
 };

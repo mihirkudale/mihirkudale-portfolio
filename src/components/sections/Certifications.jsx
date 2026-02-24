@@ -1,5 +1,5 @@
 import React from "react";
-import { RevealOnScroll } from "../RevealOnScroll";
+import { motion } from "framer-motion";
 import { BsPatchCheckFill } from "react-icons/bs";
 import { certifications } from "../../constants/certifications";
 
@@ -19,7 +19,12 @@ const Certifications = () => {
         className="absolute top-1/4 left-0 w-[300px] h-[300px] rounded-full bg-violet-100/60 blur-[80px] pointer-events-none"
       />
 
-      <RevealOnScroll>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.5, type: "spring" }}
+      >
         <div className="max-w-6xl w-full mx-auto relative z-10">
           {/* Header */}
           <div className="text-center mb-16 space-y-3">
@@ -64,7 +69,7 @@ const Certifications = () => {
             ))}
           </div>
         </div>
-      </RevealOnScroll>
+      </motion.div>
     </section>
   );
 };

@@ -1,5 +1,5 @@
 import React from "react";
-import { RevealOnScroll } from "../RevealOnScroll";
+import { motion } from "framer-motion";
 import { educationList } from "../../constants/education";
 import { LuGraduationCap } from "react-icons/lu";
 
@@ -15,7 +15,12 @@ const Education = () => {
         className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-blue-50/80 blur-[100px] pointer-events-none"
       />
 
-      <RevealOnScroll>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.5, type: "spring" }}
+      >
         <div className="max-w-4xl mx-auto w-full relative z-10 space-y-12">
           {/* Header */}
           <div className="text-center space-y-3">
@@ -73,7 +78,7 @@ const Education = () => {
             ))}
           </div>
         </div>
-      </RevealOnScroll>
+      </motion.div>
     </section>
   );
 };

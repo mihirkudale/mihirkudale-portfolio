@@ -4,7 +4,6 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { FaArrowUp } from "react-icons/fa";
 
-import "./App.css";
 import "./index.css";
 
 import { Navbar } from "./components/Navbar";
