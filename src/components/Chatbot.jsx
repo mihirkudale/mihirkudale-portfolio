@@ -373,7 +373,7 @@ export function Chatbot() {
                         }`}
                     >
                       {msg.role === "bot" ? (
-                        <div className="prose prose-sm max-w-none text-slate-700 font-medium leading-[1.6] [&_a]:text-blue-600 [&_a]:underline [&_strong]:text-slate-900 [&_strong]:font-bold">
+                        <div className="prose prose-sm max-w-none break-words [&_a]:break-all text-slate-700 font-medium leading-[1.6] [&_a]:text-blue-600 [&_a]:underline [&_strong]:text-slate-900 [&_strong]:font-bold">
                           {msg.content ? (
                             <Suspense fallback={<span>{msg.content}</span>}>
                               <ReactMarkdown>{msg.content}</ReactMarkdown>
