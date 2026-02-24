@@ -167,7 +167,7 @@ const Skills = () => {
         </div>
 
         {/* Skill Category Cards */}
-        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+        <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-start">
           <AnimatePresence mode="popLayout">
             {filteredCategories.map((category, index) => (
               <motion.div
@@ -178,10 +178,10 @@ const Skills = () => {
                 transition={{ duration: 0.4, delay: (index % 2) * 0.1, type: "spring" }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 key={category.title}
-                className="glass-card gradient-border p-8 bg-white/80 group"
+                className="glass-card gradient-border p-8 bg-white/80 group grid grid-rows-[auto_1fr] gap-6"
               >
                 {/* Title with accent */}
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3">
                   <div className="h-6 w-1.5 rounded-full bg-gradient-to-b from-blue-500 to-cyan-400" />
                   <h3 className="text-xl font-bold text-slate-900">
                     {category.title}

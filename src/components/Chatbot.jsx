@@ -384,7 +384,7 @@ export function Chatbot() {
                           )}
                           {/* Streaming cursor */}
                           {msg.isStreaming && msg.content && (
-                            <span className="inline-block w-1.5 h-4 bg-blue-500 rounded-sm animate-pulse ml-0.5 align-middle" />
+                            <span className="inline-block w-1.5 h-4 bg-blue-500 rounded-sm animate-pulse ms-0.5 align-middle" />
                           )}
                         </div>
                       ) : (
@@ -409,8 +409,8 @@ export function Chatbot() {
                     </span>
                   </div>
                   {slowResponse && (
-                    <p className="text-xs text-slate-400 font-medium pl-1 animate-pulse">
-                      Still thinking… first response may take a moment ☕
+                    <p className="text-xs text-slate-400 font-medium ps-1 animate-pulse">
+                      Still thinking... first response may take a moment ☕
                     </p>
                   )}
                 </div>
@@ -458,7 +458,7 @@ export function Chatbot() {
                   className="flex items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-white shadow-[0_4px_14px_rgba(37,99,235,0.2)] hover:bg-blue-700 hover:shadow-[0_6px_20px_rgba(37,99,235,0.3)] disabled:opacity-50 disabled:pointer-events-none transition-all focus:outline-none active:scale-95"
                   aria-label="Send message"
                 >
-                  <Send className="w-5 h-5 -ml-0.5" />
+                  <Send className="w-5 h-5 -ms-0.5" />
                 </button>
               </div>
             </div>
@@ -478,7 +478,7 @@ export function Chatbot() {
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
             type="button"
             onClick={() => setOpen(true)}
-            className="fixed bottom-6 right-20 z-[99] flex items-center gap-2.5 p-1.5 pr-5 rounded-full bg-white text-slate-900 border border-slate-200 shadow-[0_10px_25px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_35px_rgba(0,0,0,0.15)] hover:border-slate-300 transition-colors duration-300 focus:outline-none"
+            className="fixed bottom-6 right-20 z-[99] flex items-center gap-2.5 p-1.5 pe-5 rounded-full bg-white text-slate-900 border border-slate-200 shadow-[0_10px_25px_rgba(0,0,0,0.1)] hover:shadow-[0_15px_35px_rgba(0,0,0,0.15)] hover:border-slate-300 transition-colors duration-300 focus:outline-none"
             aria-label="Open chat assistant"
             aria-haspopup="dialog"
           >

@@ -7,7 +7,7 @@ export const Contact = () => {
   return (
     <section
       id="contact"
-      className="relative min-h-screen bg-slate-50 text-slate-900 py-28 px-6 flex items-center justify-center overflow-hidden"
+      className="relative min-h-dvh bg-slate-50 text-slate-900 py-28 px-6 flex items-center justify-center overflow-hidden"
     >
       {/* Background Orbs */}
       <div

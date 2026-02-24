@@ -44,7 +44,7 @@ const WorkExperience = () => {
             />
 
             {experiences.map((exp, index) => (
-              <li key={index} className="group relative pl-10 md:pl-12">
+              <li key={index} className="group relative ps-10 md:ps-12">
                 {/* Clean timeline dot */}
                 <span
                   aria-hidden="true"
@@ -78,8 +78,8 @@ const WorkExperience = () => {
                       <div
                         key={rIndex}
                         className={`relative ${rIndex !== exp.roles.length - 1
-                            ? "pb-8 border-b border-slate-200"
-                            : ""
+                          ? "pb-8 border-b border-slate-200"
+                          : ""
                           }`}
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">

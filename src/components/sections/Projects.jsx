@@ -67,7 +67,7 @@ export const Projects = () => {
                 placeholder="Search projects…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-14 pr-12 py-4 bg-white border-2 border-slate-200 rounded-2xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 shadow-sm transition-all duration-300"
+                className="w-full ps-14 pe-12 py-4 bg-white border-2 border-slate-200 rounded-2xl text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 shadow-sm transition-all duration-300"
               />
               {searchQuery && (
                 <button
@@ -124,14 +124,14 @@ export const Projects = () => {
                     transition={{ duration: 0.4, delay: (index % 3) * 0.1, type: "spring" }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     key={`${project.title}-${index}`}
-                    className="group relative glass-card gradient-border flex flex-col overflow-hidden bg-slate-50/50 hover:bg-white"
+                    className="group relative glass-card flex flex-col overflow-hidden bg-slate-50/50 hover:bg-white @container has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-blue-500 transition-all duration-300"
                   >
                     {/* Colorful subtle top bar */}
                     <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-cyan-400 opacity-80 group-hover:opacity-100 transition-opacity" />
 
                     {/* Card body */}
-                    <div className="p-8 flex flex-col flex-1">
-                      <h3 className="text-xl font-extrabold mb-3 text-slate-900 group-hover:text-blue-600 transition-colors duration-300">
+                    <div className="p-6 @sm:p-8 flex flex-col flex-1 gap-y-1">
+                      <h3 className="text-xl @sm:text-2xl font-extrabold mb-2 text-slate-900 group-hover:text-blue-600 transition-colors duration-300">
                         {project.title}
                       </h3>
                       <p className="text-base font-medium text-slate-600 mb-6 leading-relaxed flex-1">
@@ -180,7 +180,7 @@ export const Projects = () => {
                             href={project.demo}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer ml-auto"
+                            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer ms-auto outline-none"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <FaExternalLinkAlt className="text-xs shrink-0" />

@@ -14,7 +14,7 @@ export const Home = () => {
   return (
     <section
       id="home"
-      className="relative min-h-screen overflow-hidden bg-slate-50 text-slate-900 px-6 md:px-12 py-24 flex items-center justify-center"
+      className="relative min-h-dvh overflow-hidden bg-slate-50 text-slate-900 px-6 md:px-12 py-24 flex items-center justify-center"
     >
       {/* ── Soft Pastel Gradient Orbs (Light Mode) ── */}
       <div

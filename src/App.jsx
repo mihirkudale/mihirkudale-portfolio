@@ -53,7 +53,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-200 selection:text-blue-900">
+    <div className="min-h-dvh bg-slate-50 text-slate-900 selection:bg-blue-200 selection:text-blue-900">
       <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
 
       <AnimatePresence mode="wait">
