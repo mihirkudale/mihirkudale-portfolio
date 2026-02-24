@@ -54,8 +54,8 @@ function SourceBadge({ source }) {
   return (
     <span
       className={`inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase ${isAI
-          ? 'bg-blue-50 text-blue-600 border border-blue-100'
-          : 'bg-slate-50 text-slate-400 border border-slate-100'
+        ? 'bg-blue-50 text-blue-600 border border-blue-100'
+        : 'bg-slate-50 text-slate-400 border border-slate-100'
         }`}
     >
       {isAI ? '🤖 AI Agent' : '📋 Rule-based'}
