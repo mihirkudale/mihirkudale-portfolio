@@ -13,7 +13,7 @@
  */
 import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
 import PropTypes from "prop-types";
-import { X, Send } from "lucide-react";
+import { X, Send, Volume2, Square } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { chatbotConfig } from "../constants/chatbot";
 import { getChatbotReplyAsync } from "../utils/chatbotLogic";
@@ -75,11 +75,13 @@ export function Chatbot() {
   const [loading, setLoading] = useState(false);
   const [streaming, setStreaming] = useState(false);
   const [slowResponse, setSlowResponse] = useState(false);
+  const [playingAudioId, setPlayingAudioId] = useState(null);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const slowTimerRef = useRef(null);
   const dialogRef = useRef(null);
   const streamingMsgIdRef = useRef(null);
+  const audioRef = useRef(null);
   const prefersReducedMotion = usePrefersReducedMotion();
 
   const scrollToBottom = useCallback(() => {
@@ -142,8 +144,74 @@ export function Chatbot() {
   const handleClose = useCallback(() => {
     setOpen(false);
     setInput("");
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
     // Messages are NOT reset — they persist until page refresh
   }, []);
+
+  // --- Audio Management ---
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  const handleStopAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    setPlayingAudioId(null);
+  }, []);
+
+  const handlePlayAudio = useCallback(async (msgId, text) => {
+    if (playingAudioId === msgId) {
+      handleStopAudio();
+      return;
+    }
+
+    handleStopAudio();
+
+    try {
+      setPlayingAudioId(msgId);
+
+      const cleanText = text.replace(/[*#`_~]/g, '').trim();
+
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: cleanText })
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch audio stream');
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+
+      const audio = new Audio(url);
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        setPlayingAudioId(null);
+        URL.revokeObjectURL(url);
+      };
+
+      audio.onerror = () => {
+        console.error('Audio playback error');
+        setPlayingAudioId(null);
+        URL.revokeObjectURL(url);
+      };
+
+      await audio.play();
+    } catch (err) {
+      console.error('Failed to play audio:', err);
+      setPlayingAudioId(null);
+    }
+  }, [playingAudioId, handleStopAudio]);
 
   const sendMessage = useCallback(async () => {
     const text = input.trim().slice(0, chatbotConfig.maxInputLength);
@@ -391,9 +459,22 @@ export function Chatbot() {
                         <span>{msg.content}</span>
                       )}
                     </div>
-                    {/* Source attribution badge */}
-                    {msg.role === "bot" && !msg.isStreaming && msg.source && (
-                      <SourceBadge source={msg.source} />
+                    {/* Source attribution badge and TTS control */}
+                    {msg.role === "bot" && !msg.isStreaming && (
+                      <div className="flex items-center gap-2 mt-1.5">
+                        {msg.source && <SourceBadge source={msg.source} />}
+                        {msg.content && msg.content !== "Something went wrong. Please try again." && (
+                          <button
+                            type="button"
+                            onClick={() => playingAudioId === msg.id ? handleStopAudio() : handlePlayAudio(msg.id, msg.content)}
+                            className={`p-1 mt-1.5 rounded-md border text-slate-500 hover:text-slate-800 transition-colors focus:outline-none ${playingAudioId === msg.id ? 'bg-red-50 text-red-600 border-red-200 hover:text-red-700' : 'bg-slate-50 border-slate-100 hover:bg-slate-200'}`}
+                            title={playingAudioId === msg.id ? "Stop reading" : "Read aloud"}
+                            aria-label={playingAudioId === msg.id ? "Stop reading" : "Read aloud"}
+                          >
+                            {playingAudioId === msg.id ? <Square className="w-3.5 h-3.5 fill-current" /> : <Volume2 className="w-3.5 h-3.5" />}
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
