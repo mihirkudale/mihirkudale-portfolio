@@ -36,7 +36,7 @@ export default async function handler(req, res) {
         }
 
         // Limit text length to prevent abuse or timeout
-        const sanitizedText = text.trim().slice(0, 500);
+        const sanitizedText = text.trim().slice(0, 4000);
 
         // Set appropriate headers for streaming audio
         res.setHeader('Content-Type', 'audio/mpeg');
