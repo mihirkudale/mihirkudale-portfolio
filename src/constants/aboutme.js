@@ -13,12 +13,12 @@ export const aboutMeData = {
     {
       title: "What I Do",
       content:
-        "With hands-on experience in Python, SQL, Power BI, Tableau, and cloud platforms like AWS and Azure, I bring a full-stack approach to the data lifecycle—from ETL pipelines and big data processing to real-time dashboards and machine learning solutions. I’ve worked across diverse domains, including e-commerce and enterprise software.",
+        "With hands-on experience in Python, SQL, Power BI, Tableau, and cloud platforms like AWS, GCP, Azure, I bring a full-stack approach to the data lifecycle—from ETL pipelines and big data processing to real-time dashboards and machine learning solutions. I’ve worked across diverse domains, including e-commerce and enterprise software.",
     },
     {
       title: "Credentials & Experience",
       content:
-        "Former Amazon Data Analyst and 3× Microsoft Certified professional. I’ve helped teams unlock business value at scale through advanced analytics, clean code, and collaborative data storytelling.",
+        "Former Amazon Data Analyst and Software Developer - Data & AI in GovTech and 3× Microsoft Certified professional. I’ve helped teams unlock business value at scale through advanced analytics, clean code, and collaborative data storytelling.",
     },
     {
       title: "Outside the Code",
