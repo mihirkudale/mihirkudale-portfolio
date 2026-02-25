@@ -4,7 +4,7 @@ export const experiences = [
         location: "Pune, India",
         roles: [
             {
-                role: "Software Developer",
+                role: "Software Developer - Data & AI",
                 start: "2024-08",
                 end: "2025-11",
                 display: "Aug 2024 – Nov 2025",

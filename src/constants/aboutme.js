@@ -3,7 +3,7 @@ export const aboutMeData = {
   heading: "About Me",
   intro: {
     name: "Mihir Kudale",
-    title: "Software Developer",
+    title: "Data Scientist",
     focus: "Data Analytics, Data Science, and AI Engineering",
     description:
       "I specialize in building scalable analytics platforms, automating BI workflows, and developing intelligent applications that transform raw data into actionable business intelligence.",
