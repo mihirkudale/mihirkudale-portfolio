@@ -10,6 +10,7 @@ import { Navbar } from "./components/Navbar";
 import { Home } from "./components/sections/Home";
 import { Chatbot } from "./components/Chatbot";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { MagneticCursor } from "./components/ui/MagneticCursor";
 
 // Lazy load below-the-fold sections for faster LCP
 const Projects = lazy(() => import("./components/sections/Projects").then(m => ({ default: m.Projects })));
@@ -53,6 +54,7 @@ function App() {
 
   return (
     <div className="min-h-dvh bg-slate-50 text-slate-900 selection:bg-blue-200 selection:text-blue-900">
+      <MagneticCursor />
       <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
 
       <AnimatePresence mode="wait">

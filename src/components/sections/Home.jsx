@@ -3,6 +3,9 @@ import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { HiOutlineMail } from "react-icons/hi";
 import { homeData } from "../../constants/home";
 import { motion } from "framer-motion";
+import { MagneticButton } from "../ui/MagneticButton";
+import { TiltCard } from "../ui/TiltCard";
+import { InteractiveGlow } from "../ui/InteractiveGlow";
 
 const stats = [
   { value: "3+", label: "Years Experience" },
@@ -16,20 +19,8 @@ export const Home = () => {
       id="home"
       className="relative min-h-dvh overflow-hidden bg-slate-50 text-slate-900 px-6 md:px-12 py-24 flex items-center justify-center"
     >
-      {/* ── Soft Pastel Gradient Orbs (Light Mode) ── */}
-      <div
-        aria-hidden="true"
-        className="absolute top-[-10%] left-[-5%] h-[500px] w-[500px] rounded-full bg-blue-400/20 blur-[120px] animate-orb-1 pointer-events-none"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute bottom-[-10%] right-[-5%] h-[450px] w-[450px] rounded-full bg-violet-300/20 blur-[120px] animate-orb-2 pointer-events-none"
-      />
-      <div
-        aria-hidden="true"
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[300px] rounded-full bg-cyan-300/15 blur-[80px] animate-orb-1 pointer-events-none"
-        style={{ animationDelay: "4s" }}
-      />
+      {/* ── Interactive Generative Glow (2026) ── */}
+      <InteractiveGlow />
 
       {/* ── Subtle Dot grid texture overlay ── */}
       <div
@@ -100,24 +91,28 @@ export const Home = () => {
 
             {/* CTAs */}
             <div className="flex flex-wrap gap-4 pt-2">
-              <motion.a
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                href={homeData.cta.primary.href}
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-7 py-3.5 text-white font-semibold shadow-[0_10px_20px_rgba(37,99,235,0.2)] hover:shadow-[0_15px_30px_rgba(37,99,235,0.3)] hover:bg-blue-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-              >
-                {homeData.cta.primary.label}
-              </motion.a>
-              <motion.a
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                href={homeData.cta.secondary.href}
-                className="inline-flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white/50 px-7 py-3.5 text-slate-700 font-semibold backdrop-blur-sm hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
-              >
-                {homeData.cta.secondary.label}
-              </motion.a>
+              <MagneticButton strength={0.2}>
+                <motion.a
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  href={homeData.cta.primary.href}
+                  className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-7 py-3.5 text-white font-semibold shadow-[0_10px_20px_rgba(37,99,235,0.2)] hover:shadow-[0_15px_30px_rgba(37,99,235,0.3)] hover:bg-blue-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                >
+                  {homeData.cta.primary.label}
+                </motion.a>
+              </MagneticButton>
+              <MagneticButton strength={0.2}>
+                <motion.a
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                  href={homeData.cta.secondary.href}
+                  className="inline-flex items-center justify-center rounded-xl border-2 border-slate-200 bg-white/50 px-7 py-3.5 text-slate-700 font-semibold backdrop-blur-sm hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+                >
+                  {homeData.cta.secondary.label}
+                </motion.a>
+              </MagneticButton>
             </div>
 
             {/* Social Icons */}
@@ -153,25 +148,27 @@ export const Home = () => {
           {/* ── Right: Image + Stats ── */}
           <div className="flex flex-col items-center md:items-end gap-10">
             {/* Profile Image with refined shadow */}
-            <div className="relative">
-              {/* Soft decorative background blob */}
-              <div
-                aria-hidden="true"
-                className="absolute -inset-4 rounded-[3rem] bg-gradient-to-tr from-blue-200/50 to-violet-200/50 blur-xl mix-blend-multiply"
-              />
+            <TiltCard>
+              <div className="relative">
+                {/* Soft decorative background blob */}
+                <div
+                  aria-hidden="true"
+                  className="absolute -inset-4 rounded-[3rem] bg-gradient-to-tr from-blue-200/50 to-violet-200/50 blur-xl mix-blend-multiply"
+                />
 
-              <img
-                src={homeData.image.src}
-                alt={homeData.image.alt}
-                width={homeData.image.width}
-                height={homeData.image.height}
-                className="relative w-[280px] md:w-[380px] h-auto object-cover rounded-[2.5rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)]"
-                loading="eager"
-                fetchpriority="high"
-                decoding="async"
-                referrerPolicy="no-referrer"
-              />
-            </div>
+                <img
+                  src={homeData.image.src}
+                  alt={homeData.image.alt}
+                  width={homeData.image.width}
+                  height={homeData.image.height}
+                  className="relative w-[280px] md:w-[380px] h-auto object-cover rounded-[2.5rem] shadow-[0_20px_40px_-10px_rgba(0,0,0,0.15)]"
+                  loading="eager"
+                  fetchpriority="high"
+                  decoding="async"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            </TiltCard>
 
 
           </div>

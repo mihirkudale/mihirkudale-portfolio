@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { FaGithub, FaExternalLinkAlt } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { allProjects, techFilters, techDescriptions } from "../../constants/projects";
+import { TiltCard } from "../ui/TiltCard";
 
 const MAX_VISIBLE_TAGS = 4;
 
@@ -124,71 +125,73 @@ export const Projects = () => {
                     transition={{ duration: 0.4, delay: (index % 3) * 0.1, type: "spring" }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     key={`${project.title}-${index}`}
-                    className="group relative glass-card flex flex-col overflow-hidden bg-slate-50/50 hover:bg-white @container has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-blue-500 transition-all duration-300"
+                    className="group relative flex flex-col h-full"
                   >
-                    {/* Colorful subtle top bar */}
-                    <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-cyan-400 opacity-80 group-hover:opacity-100 transition-opacity" />
+                    <TiltCard className="flex flex-col flex-1 h-full glass-card overflow-hidden bg-slate-50/50 hover:bg-white @container has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-blue-500 transition-all duration-300">
+                      {/* Colorful subtle top bar */}
+                      <div className="h-1.5 w-full bg-gradient-to-r from-blue-500 to-cyan-400 opacity-80 group-hover:opacity-100 transition-opacity" />
 
-                    {/* Card body */}
-                    <div className="p-6 @sm:p-8 flex flex-col flex-1 gap-y-1">
-                      <h3 className="text-xl @sm:text-2xl font-extrabold mb-2 text-slate-900 group-hover:text-blue-600 transition-colors duration-300">
-                        {project.title}
-                      </h3>
-                      <p className="text-base font-medium text-slate-600 mb-6 leading-relaxed flex-1">
-                        {project.description}
-                      </p>
+                      {/* Card body */}
+                      <div className="p-6 @sm:p-8 flex flex-col flex-1 gap-y-1">
+                        <h3 className="text-xl @sm:text-2xl font-extrabold mb-2 text-slate-900 group-hover:text-blue-600 transition-colors duration-300">
+                          {project.title}
+                        </h3>
+                        <p className="text-base font-medium text-slate-600 mb-6 leading-relaxed flex-1">
+                          {project.description}
+                        </p>
 
-                      {/* Tech Tags */}
-                      <div className="flex flex-wrap gap-2 mb-8">
-                        {stack.slice(0, MAX_VISIBLE_TAGS).map((tech, i) => (
-                          <span
-                            key={`${project.title}-tag-${tech}-${i}`}
-                            title={techDescriptions?.[tech] ?? tech}
-                            className="bg-blue-50 text-blue-700 border border-blue-100 py-1 px-3 rounded-lg text-xs font-bold"
-                          >
-                            {tech}
-                          </span>
-                        ))}
-                        {stack.length > MAX_VISIBLE_TAGS && (
-                          <span className="text-xs font-bold text-slate-500 bg-slate-100 py-1 px-2.5 rounded-lg border border-slate-200">
-                            +{stack.length - MAX_VISIBLE_TAGS} more
-                          </span>
-                        )}
+                        {/* Tech Tags */}
+                        <div className="flex flex-wrap gap-2 mb-8 items-center">
+                          {stack.slice(0, MAX_VISIBLE_TAGS).map((tech, i) => (
+                            <span
+                              key={`${project.title}-tag-${tech}-${i}`}
+                              title={techDescriptions?.[tech] ?? tech}
+                              className="bg-blue-50 text-blue-700 border border-blue-100 py-1 px-3 rounded-lg text-xs font-bold"
+                            >
+                              {tech}
+                            </span>
+                          ))}
+                          {stack.length > MAX_VISIBLE_TAGS && (
+                            <span className="text-xs font-bold text-slate-500 bg-slate-100 py-1 px-2.5 rounded-lg border border-slate-200">
+                              +{stack.length - MAX_VISIBLE_TAGS} more
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Links — relative + z-10 so gradient-border ::before pseudo-element doesn't intercept clicks */}
+                        <div className="relative z-10 flex gap-5 items-center text-sm font-bold mt-auto pt-5 border-t-2 border-slate-100">
+                          {hasGithub ? (
+                            <a
+                              href={project.github}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:underline transition-colors cursor-pointer"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <FaGithub className="text-lg shrink-0" />
+                              View Code
+                            </a>
+                          ) : (
+                            <span className="inline-flex items-center gap-2 text-slate-300 cursor-not-allowed text-xs font-medium">
+                              <FaGithub className="text-base shrink-0" />
+                              Private Repo
+                            </span>
+                          )}
+                          {showLive && (
+                            <a
+                              href={project.demo}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer ms-auto outline-none"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <FaExternalLinkAlt className="text-xs shrink-0" />
+                              Live Demo
+                            </a>
+                          )}
+                        </div>
                       </div>
-
-                      {/* Links — relative + z-10 so gradient-border ::before pseudo-element doesn't intercept clicks */}
-                      <div className="relative z-10 flex gap-5 items-center text-sm font-bold mt-auto pt-5 border-t-2 border-slate-100">
-                        {hasGithub ? (
-                          <a
-                            href={project.github}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 hover:underline transition-colors cursor-pointer"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <FaGithub className="text-lg shrink-0" />
-                            View Code
-                          </a>
-                        ) : (
-                          <span className="inline-flex items-center gap-2 text-slate-300 cursor-not-allowed text-xs font-medium">
-                            <FaGithub className="text-base shrink-0" />
-                            Private Repo
-                          </span>
-                        )}
-                        {showLive && (
-                          <a
-                            href={project.demo}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 hover:underline transition-colors cursor-pointer ms-auto outline-none"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <FaExternalLinkAlt className="text-xs shrink-0" />
-                            Live Demo
-                          </a>
-                        )}
-                      </div>
-                    </div>
+                    </TiltCard>
                   </motion.div>
                 );
               })}

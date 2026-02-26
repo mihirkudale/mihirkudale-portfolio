@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { TiltCard } from "../ui/TiltCard";
 import {
   FaReact,
   FaNodeJs,
@@ -178,27 +179,29 @@ const Skills = () => {
                 transition={{ duration: 0.4, delay: (index % 2) * 0.1, type: "spring" }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 key={category.title}
-                className="glass-card gradient-border p-8 bg-white/80 group grid grid-rows-[auto_1fr] gap-6"
+                className="group h-full"
               >
-                {/* Title with accent */}
-                <div className="flex items-center gap-3">
-                  <div className="h-6 w-1.5 rounded-full bg-gradient-to-b from-blue-500 to-cyan-400" />
-                  <h3 className="text-xl font-bold text-slate-900">
-                    {category.title}
-                  </h3>
-                </div>
+                <TiltCard className="h-full glass-card gradient-border p-8 bg-white/80 grid grid-rows-[auto_1fr] gap-6">
+                  {/* Title with accent */}
+                  <div className="flex items-center gap-3">
+                    <div className="h-6 w-1.5 rounded-full bg-gradient-to-b from-blue-500 to-cyan-400" />
+                    <h3 className="text-xl font-bold text-slate-900">
+                      {category.title}
+                    </h3>
+                  </div>
 
-                <div className="flex flex-wrap gap-2.5">
-                  {category.skills.map((skill, i) => (
-                    <motion.div
-                      key={i}
-                      whileHover={{ scale: 1.05, y: -2 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                    >
-                      <SkillBadge iconKey={skill.icon} name={skill.name} />
-                    </motion.div>
-                  ))}
-                </div>
+                  <div className="flex flex-wrap gap-2.5">
+                    {category.skills.map((skill, i) => (
+                      <motion.div
+                        key={i}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                      >
+                        <SkillBadge iconKey={skill.icon} name={skill.name} />
+                      </motion.div>
+                    ))}
+                  </div>
+                </TiltCard>
               </motion.div>
             ))}
           </AnimatePresence>
