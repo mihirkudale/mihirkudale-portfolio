@@ -1,7 +1,7 @@
 // src/constants/home.js
 export const homeData = {
   name: "Mihir Kudale",
-  roles: "Data Scientist • Software Developer - Data & AI • Data Engineer • AI Engineer",
+  roles: "Data Scientist • Data Analyst • Data Engineer • AI Engineer",
   headline: "I build analytics, AI systems that turn messy data into clear decisions and intelligent products—at scale.",
   badges: [
     "Ex-Amazon",
