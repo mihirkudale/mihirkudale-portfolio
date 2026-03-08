@@ -12,7 +12,6 @@
  * Logic: src/utils/chatbotLogic.js
  */
 import { useState, useRef, useEffect, useCallback, lazy, Suspense } from "react";
-import PropTypes from "prop-types";
 import { X, Send, Volume2, Square } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { chatbotConfig } from "../constants/chatbot";
@@ -47,26 +46,7 @@ function usePrefersReducedMotion() {
   return prefersReducedMotion;
 }
 
-/** Source badge component */
-function SourceBadge({ source }) {
-  if (!source) return null;
 
-  const isAI = source === 'api';
-  return (
-    <span
-      className={`inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide uppercase ${isAI
-        ? 'bg-blue-50 text-blue-600 border border-blue-100'
-        : 'bg-slate-50 text-slate-400 border border-slate-100'
-        }`}
-    >
-      {isAI ? '🤖 AI Agent' : '📋 Rule-based'}
-    </span>
-  );
-}
-
-SourceBadge.propTypes = {
-  source: PropTypes.string,
-};
 
 export function Chatbot() {
   const [open, setOpen] = useState(false);
@@ -76,6 +56,7 @@ export function Chatbot() {
   const [streaming, setStreaming] = useState(false);
   const [slowResponse, setSlowResponse] = useState(false);
   const [playingAudioId, setPlayingAudioId] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const slowTimerRef = useRef(null);
@@ -213,12 +194,32 @@ export function Chatbot() {
     }
   }, [playingAudioId, handleStopAudio]);
 
+  // Smart follow-up suggestions based on last user message
+  const getFollowUpSuggestions = useCallback((userText) => {
+    const t = userText.toLowerCase();
+    if (t.includes('skill') || t.includes('tech') || t.includes('stack')) {
+      return ['Show Python projects', 'Power BI dashboards', 'Any ML experience?'];
+    } else if (t.includes('project') || t.includes('built') || t.includes('dashboard')) {
+      return ['What tech stack?', 'Any live demos?', 'Experience at Amazon?'];
+    } else if (t.includes('experience') || t.includes('work') || t.includes('job') || t.includes('amazon')) {
+      return ['What are his skills?', 'Education background?', 'Open to opportunities?'];
+    } else if (t.includes('education') || t.includes('degree') || t.includes('university')) {
+      return ['Certifications?', 'Work experience?', 'What are his skills?'];
+    } else if (t.includes('contact') || t.includes('hire') || t.includes('email') || t.includes('linkedin')) {
+      return ['Download resume?', 'Availability?', 'View projects'];
+    } else if (t.includes('certif')) {
+      return ['What tools does he use?', 'Any Microsoft certs?', 'Work experience?'];
+    }
+    return ['Skills', 'Projects', 'Experience', 'Contact'];
+  }, []);
+
   const sendMessage = useCallback(async () => {
     const text = input.trim().slice(0, chatbotConfig.maxInputLength);
     if (!text || loading) return;
 
     setInput("");
     setSlowResponse(false);
+    setSuggestions([]);  // clear old suggestions
     setMessages((prev) => [...prev, { id: nextMessageId(), role: "user", content: text }]);
     setLoading(true);
 
@@ -276,6 +277,9 @@ export function Chatbot() {
           };
         })
       );
+
+      // Show contextual follow-up suggestions
+      setSuggestions(getFollowUpSuggestions(text));
     } catch (error) {
       console.error('Chat error:', error);
       setMessages((prev) => {
@@ -296,12 +300,13 @@ export function Chatbot() {
       setStreaming(false);
       streamingMsgIdRef.current = null;
     }
-  }, [input, loading, messages]);
+  }, [input, loading, messages, getFollowUpSuggestions]);
 
   const handleSuggestionClick = useCallback(async (q) => {
     if (loading) return;
 
     const runLogic = async () => {
+      setSuggestions([]);  // clear suggestions immediately
       setMessages((prev) => [...prev, { id: nextMessageId(), role: "user", content: q }]);
       setLoading(true);
 
@@ -342,6 +347,9 @@ export function Chatbot() {
             return { ...msg, content: reply || msg.content, source, isStreaming: false };
           })
         );
+
+        // Show contextual follow-up suggestions
+        setSuggestions(getFollowUpSuggestions(q));
       } catch (error) {
         console.error('Chat error:', error);
         setMessages((prev) => {
@@ -366,7 +374,7 @@ export function Chatbot() {
     } else {
       setTimeout(runLogic, 0);
     }
-  }, [loading, messages]);
+  }, [loading, messages, getFollowUpSuggestions]);
 
   const handleKeyDown = useCallback(
     (e) => {
@@ -459,22 +467,17 @@ export function Chatbot() {
                         <span>{msg.content}</span>
                       )}
                     </div>
-                    {/* Source attribution badge and TTS control */}
-                    {msg.role === "bot" && !msg.isStreaming && (
-                      <div className="flex items-center gap-2 mt-1.5">
-                        {msg.source && <SourceBadge source={msg.source} />}
-                        {msg.content && msg.content !== "Something went wrong. Please try again." && (
-                          <button
-                            type="button"
-                            onClick={() => playingAudioId === msg.id ? handleStopAudio() : handlePlayAudio(msg.id, msg.content)}
-                            className={`p-1 mt-1.5 rounded-md border text-slate-500 hover:text-slate-800 transition-colors focus:outline-none ${playingAudioId === msg.id ? 'bg-red-50 text-red-600 border-red-200 hover:text-red-700' : 'bg-slate-50 border-slate-100 hover:bg-slate-200'}`}
-                            title={playingAudioId === msg.id ? "Stop reading" : "Read aloud"}
-                            aria-label={playingAudioId === msg.id ? "Stop reading" : "Read aloud"}
-                          >
-                            {playingAudioId === msg.id ? <Square className="w-3.5 h-3.5 fill-current" /> : <Volume2 className="w-3.5 h-3.5" />}
-                          </button>
-                        )}
-                      </div>
+                    {/* TTS control */}
+                    {msg.role === "bot" && !msg.isStreaming && msg.content && msg.content !== "Something went wrong. Please try again." && (
+                      <button
+                        type="button"
+                        onClick={() => playingAudioId === msg.id ? handleStopAudio() : handlePlayAudio(msg.id, msg.content)}
+                        className={`p-1 mt-2 rounded-md border text-slate-500 hover:text-slate-800 transition-colors focus:outline-none ${playingAudioId === msg.id ? 'bg-red-50 text-red-600 border-red-200 hover:text-red-700' : 'bg-slate-50 border-slate-100 hover:bg-slate-200'}`}
+                        title={playingAudioId === msg.id ? "Stop reading" : "Read aloud"}
+                        aria-label={playingAudioId === msg.id ? "Stop reading" : "Read aloud"}
+                      >
+                        {playingAudioId === msg.id ? <Square className="w-3.5 h-3.5 fill-current" /> : <Volume2 className="w-3.5 h-3.5" />}
+                      </button>
                     )}
                   </div>
                 </div>
@@ -499,16 +502,35 @@ export function Chatbot() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Suggestions */}
-            {messages.length <= 2 && !loading && (
-              <div className="px-4 py-3 border-t border-slate-100 bg-white">
+            {/* Suggestions — persistent, context-aware after every reply */}
+            {!loading && suggestions.length > 0 && (
+              <div className="px-4 py-2.5 border-t border-slate-100 bg-white">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-2">Ask next</p>
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                  {suggestions.map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => handleSuggestionClick(q)}
+                      className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-600 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors whitespace-nowrap"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* Initial suggestions (no conversation yet) */}
+            {!loading && suggestions.length === 0 && messages.length <= 1 && (
+              <div className="px-4 py-2.5 border-t border-slate-100 bg-white">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-2">Get started</p>
                 <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                   {["Experience", "Projects", "Skills", "Contact"].map((q) => (
                     <button
                       key={q}
                       type="button"
                       onClick={() => handleSuggestionClick(q)}
-                      className="flex-shrink-0 px-3 py-1.5 text-xs font-bold rounded-lg border border-slate-200 text-slate-600 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors"
+                      className="flex-shrink-0 px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-200 text-slate-600 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors"
                     >
                       {q}
                     </button>
