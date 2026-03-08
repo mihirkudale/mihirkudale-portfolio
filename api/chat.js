@@ -156,7 +156,8 @@ async function getGraph() {
   const llm = new ChatGroq({
     apiKey: process.env.GROQ_API_KEY,
     modelName: 'llama-3.1-8b-instant',
-    temperature: 0.2,
+    temperature: 0.1,
+    maxTokens: 512,
   });
 
   const llmWithTools = llm.bindTools(tools);

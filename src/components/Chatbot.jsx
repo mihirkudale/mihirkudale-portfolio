@@ -222,8 +222,8 @@ export function Chatbot() {
     setMessages((prev) => [...prev, { id: nextMessageId(), role: "user", content: text }]);
     setLoading(true);
 
-    // Show 'still thinking' hint after 4s (catches cold starts)
-    slowTimerRef.current = setTimeout(() => setSlowResponse(true), 4000);
+    // Show 'still thinking' hint after 6s (catches cold starts)
+    slowTimerRef.current = setTimeout(() => setSlowResponse(true), 6000);
 
     // Create a placeholder bot message for streaming
     const botMsgId = nextMessageId();

@@ -13,6 +13,6 @@ export const chatbotConfig = {
   /** Max characters accepted per message (prevents abuse and keeps responses fast) */
   maxInputLength: 500,
 
-  /** Delay (ms) before showing bot reply – simulates "thinking" without blocking */
-  replyDelayMs: 300,
+  /** Delay (ms) before showing bot reply – set to 0 for instant response */
+  replyDelayMs: 0,
 };
