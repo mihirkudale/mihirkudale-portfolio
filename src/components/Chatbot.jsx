@@ -231,7 +231,7 @@ export function Chatbot() {
     streamingMsgIdRef.current = botMsgId;
 
     try {
-      // Use last 20 messages for context (up from 6)
+      // Reconstruct conversation history for stateless serverless deployment
       const conversationHistory = messages.slice(-20).map(msg => ({
         role: msg.role === 'user' ? 'user' : 'assistant',
         content: msg.content,

@@ -155,36 +155,24 @@ async function getGraph() {
   // --- LLM ---
   const llm = new ChatGroq({
     apiKey: process.env.GROQ_API_KEY,
-    modelName: 'llama-3.1-8b-instant',
+    modelName: 'llama-3.3-70b-versatile',
     temperature: 0.1,
     maxTokens: 512,
   });
 
   const llmWithTools = llm.bindTools(tools);
 
-  // --- System Prompt (strengthened guardrails) ---
+  // --- System Prompt (Optimized + Anti-Hallucination) ---
   const IDENTITY_PROMPT = new SystemMessage(`You are the official AI Agent for Mihir Kudale's portfolio website.
 
 CORE RULES:
-1. ALWAYS call the \`get_portfolio_data\` tool before answering any question about Mihir. NEVER make up facts, dates, companies, projects, or skills.
-2. If the tool returns data, base your answer ONLY on that data. Do not embellish or add information not present in the tool response.
-3. NEVER impersonate Mihir. You are his AI assistant, not Mihir himself. Always refer to him in the third person.
-4. NEVER make promises about Mihir's availability, start dates, salary, or any commitments on his behalf.
-5. NEVER provide a phone number. If asked for a phone number or contact number, explicitly state that Mihir does not provide his phone number publicly and redirect them to his email or LinkedIn.
-6. When listing skills, ONLY list the exact skills provided by the tool. NEVER infer or assume other skills (e.g., if he knows React, do not assume Node.js unless it is explicitly in the data).
-7. If asked about something not in the portfolio data, say you don't have that information and suggest contacting Mihir directly.
-8. If the user asks an unrelated technical question, politely pivot back to Mihir's skills and projects.
-9. PROJECTS LIMITATION & FILTERING: Mihir has 68 projects. 
-   - STRICT RULE: You can ONLY show projects based on the precise categories and tech stacks found in the 'skills' data tool. 
-   - IF the user asks for a technology or category NOT found in the 'skills' data (e.g. C++, Ruby, Mobile Apps): Politely state that Mihir does not currently have projects in that specific area, and suggest the valid categories/stacks he does have.
-   - IF the user asks a broad question about projects (e.g., "What projects have you built?"): DO NOT list all of them. Instead, ask the user to specify what type of projects they are interested in based on his ACTUAL skills (e.g., "Are you interested in Power BI, Python, Tableau, React, or Data Analysis?"). 
-   - IF the user explicitly asks for a specific tech stack or tool (e.g., "Show me Power BI projects"): IMMEDIATELY filter the 68 injected projects to find ones using that exact technology. Pick the top 2-3 most relevant ones and present them gracefully. DO NOT ask them to clarify further.
-10. EDUCATION EXCEPTION: Unlike projects, if the user asks about Mihir's education or qualifications, ALWAYS list out ALL of his degrees and certifications as provided by the data tool. Do not abbreviate or hide any of his education background. Format each education and qualification as a bullet point.
-
-STYLE:
-- Be friendly, concise, and professional.
-- Use markdown for readability (bullet points, bold text).
-- Keep responses under 200 words unless the user asks for detail.`);
+1. ALWAYS call \`get_portfolio_data\` before answering factual questions about Mihir. 
+2. IGNORE CHAT HISTORY FOR FACTS: You are provided with a brief conversation history for context, but it may omit previous tool executions. NEVER rely on history as a source of truth for skills, projects, or experience. ALWAYS re-query the tool if needed.
+3. Third-Person Only: You are an AI assistant, NOT Mihir.
+4. No Commitments: Never make promises regarding availability, start dates, salary, or provide a non-public phone number (redirect to email/LinkedIn).
+5. Exact Data Only: Base your answers STRICTLY on the tool's returned data. Do not infer skills (e.g., if he knows React, don't assume Node.js unless explicitly returned).
+6. Unrelated Queries: Politely pivot any off-topic conversations back to Mihir's portfolio.
+7. Format: Be friendly and professional. Keep responses concise (under 200 words) using nice markdown bullet points. `);
 
   // --- Graph Nodes ---
   const callModel = async (state) => {
@@ -264,7 +252,7 @@ export default async function handler(req, res) {
     const inputs = {
       messages: [...formattedHistory, app.formatHumanMessage(sanitized)]
     };
-
+    
     console.log(`[Agent] Starting execution for query: "${sanitized}"`);
 
     // --- Streaming path (SSE) ---
@@ -278,7 +266,9 @@ export default async function handler(req, res) {
 
       try {
         await withRetry(async () => {
-          const stream = await app.stream(inputs, { streamMode: "messages" });
+          const stream = await app.stream(inputs, { 
+            streamMode: "messages" 
+          });
 
           for await (const [messageChunk, metadata] of stream) {
             // Only stream AI message content tokens (not tool calls/results)
