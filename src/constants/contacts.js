@@ -1,11 +1,16 @@
 // src/constants/contacts.js
 
+// Email split to prevent regex-based harvesting by spam bots
+const _eu = 'mihirkudale94';
+const _ed = 'gmail.com';
+const _email = `${_eu}@${_ed}`;
+
 export const contactConfig = {
   heading: "Let’s Work Together",
   description:
     "Looking for a data analyst, data scientist, data engineer, or AI/ML developer who delivers results? Let’s connect via email or your preferred platform.",
   ctaLink:
-    "mailto:mihirkudale94@gmail.com?subject=Opportunity%20to%20Collaborate&body=Hi%20Mihir%2C%0A%0AI came across your portfolio and wanted to connect regarding...",
+    `mailto:${_email}?subject=Opportunity%20to%20Collaborate&body=Hi%20Mihir%2C%0A%0AI came across your portfolio and wanted to connect regarding...`,
   ctaText: "Get in Touch",
 
   locationTitle: "Location",
@@ -19,7 +24,7 @@ export const contactConfig = {
   socials: {
     github: "https://github.com/mihirkudale",
     linkedin: "https://www.linkedin.com/in/mihirkudale/",
-    email: "mailto:mihirkudale94@gmail.com",
+    email: `mailto:${_email}`,
   },
 
   footer: {

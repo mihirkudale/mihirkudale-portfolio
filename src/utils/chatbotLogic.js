@@ -247,15 +247,24 @@ export async function getChatbotReplyAsync(userMessage, conversationHistory = []
 
     // Try SSE streaming API first
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          conversationHistory,
-          stream: !!onToken, // Only stream if caller supports it
-        }),
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+      let response;
+      try {
+        response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: userMessage,
+            conversationHistory,
+            stream: !!onToken,
+          }),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
@@ -274,7 +283,11 @@ export async function getChatbotReplyAsync(userMessage, conversationHistory = []
       return { reply: data.reply, source: data.source || 'api' };
 
     } catch (apiError) {
-      console.warn('API unavailable, using rule-based fallback:', apiError.message);
+      if (apiError.name === 'AbortError') {
+        console.warn('API request timed out, using rule-based fallback');
+      } else {
+        console.warn('API unavailable, using rule-based fallback:', apiError.message);
+      }
       return getDefaultReply(normalized);
     }
   } catch (error) {

@@ -3,6 +3,49 @@ import { useState, useEffect, lazy, Suspense, startTransition } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { FaArrowUp } from "react-icons/fa";
+import { Helmet } from "react-helmet-async";
+
+const SITE_URL = "https://mihirkudale.com";
+const OG_IMAGE = "https://i.postimg.cc/gjnbb9xF/80c8c743-9757-4139-b053-b2b33bce6626.png";
+
+const ROUTE_META = {
+  "/": {
+    title: "Mihir Kudale — Data Scientist & AI Developer",
+    description: "Ex-Amazon Data Analyst & Data Scientist specialising in Python, SQL, Power BI and Machine Learning. Microsoft Certified.",
+  },
+  "/about": {
+    title: "About — Mihir Kudale",
+    description: "Learn about Mihir Kudale — Ex-Amazon Data Analyst, Data Scientist and AI Developer focused on Python, SQL and Machine Learning.",
+  },
+  "/skills": {
+    title: "Skills — Mihir Kudale",
+    description: "Mihir Kudale's technical skills: Python, SQL, Power BI, Tableau, Machine Learning, Azure, GCP, and more.",
+  },
+  "/experience": {
+    title: "Experience — Mihir Kudale",
+    description: "Mihir Kudale's professional experience including roles at Amazon and other companies in data analytics and AI.",
+  },
+  "/projects": {
+    title: "Projects — Mihir Kudale",
+    description: "Portfolio of Mihir Kudale's data science projects — Python, SQL, Power BI dashboards, and Tableau visualisations.",
+  },
+  "/education": {
+    title: "Education — Mihir Kudale",
+    description: "Mihir Kudale's academic background including MCA and BCA degrees.",
+  },
+  "/certifications": {
+    title: "Certifications — Mihir Kudale",
+    description: "Mihir Kudale's certifications: Microsoft PL-300, DP-100, AI-102, Google, Coursera, IBM, and more.",
+  },
+  "/testimonials": {
+    title: "Testimonials — Mihir Kudale",
+    description: "What colleagues and collaborators say about working with Mihir Kudale.",
+  },
+  "/contact": {
+    title: "Contact — Mihir Kudale",
+    description: "Get in touch with Mihir Kudale for data science, AI, or analytics opportunities.",
+  },
+};
 
 import "./index.css";
 
@@ -51,9 +94,24 @@ function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const meta = ROUTE_META[location.pathname] ?? ROUTE_META["/"];
+
   return (
     <div className="min-h-dvh bg-slate-50 text-slate-900 selection:bg-blue-200 selection:text-blue-900">
-      <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      <Helmet>
+        <title>{meta.title}</title>
+        <meta name="description" content={meta.description} />
+        <meta property="og:title" content={meta.title} />
+        <meta property="og:description" content={meta.description} />
+        <meta property="og:url" content={`${SITE_URL}${location.pathname}`} />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta name="twitter:title" content={meta.title} />
+        <meta name="twitter:description" content={meta.description} />
+        <link rel="canonical" href={`${SITE_URL}${location.pathname}`} />
+      </Helmet>
+      <ErrorBoundary>
+        <Navbar menuOpen={menuOpen} setMenuOpen={setMenuOpen} />
+      </ErrorBoundary>
 
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
@@ -88,7 +146,9 @@ function App() {
         </Routes>
       </AnimatePresence>
 
-      <Chatbot />
+      <ErrorBoundary>
+        <Chatbot />
+      </ErrorBoundary>
 
       {/* Elegant scroll-to-top button */}
       {showScrollTop && (

@@ -23,8 +23,8 @@ const require = createRequire(import.meta.url);
 // Load real portfolio data at startup
 const portfolio = require('./data/portfolio.json');
 
-// Import production rate limiter (Redis + in-memory fallback)
 import { isRateLimited } from './lib/rateLimit.js';
+import { logger } from './lib/logger.js';
 
 // --- Input Sanitization ---
 function sanitizeInput(text) {
@@ -57,7 +57,7 @@ function validateOutput(text) {
   const lower = text.toLowerCase();
   for (const phrase of BLOCKED_PHRASES) {
     if (lower.includes(phrase)) {
-      console.warn(`[Guardrail] Blocked phrase detected: "${phrase}"`);
+      logger.warn(`[Guardrail] Blocked phrase detected: "${phrase}"`);
       return "I can share factual information about Mihir's portfolio, skills, and experience. For specific arrangements like availability or interviews, please reach out directly via the **Contact** section.";
     }
   }
@@ -80,7 +80,7 @@ async function withRetry(fn, { maxRetries = 1, baseDelayMs = 1000 } = {}) {
       if (!isTransient || attempt === maxRetries) throw err;
 
       const delay = baseDelayMs * Math.pow(2, attempt);
-      console.warn(`[Retry] Attempt ${attempt + 1} failed, retrying in ${delay}ms:`, err.message);
+      logger.warn(`[Retry] Attempt ${attempt + 1} failed, retrying in ${delay}ms:`, err.message);
       await new Promise(r => setTimeout(r, delay));
     }
   }
@@ -103,7 +103,7 @@ async function getGraph() {
   // --- Tools ---
   const getPortfolioDataTool = tool(
     async ({ topic }) => {
-      console.log(`[Tool] getPortfolioData called for topic: ${topic}`);
+      logger.info(`[Tool] getPortfolioData called for topic: ${topic}`);
       switch (topic.toLowerCase()) {
         case 'about': return JSON.stringify(portfolio.about);
         case 'contact': return JSON.stringify(portfolio.contact);
@@ -140,7 +140,7 @@ async function getGraph() {
 
   const checkAvailabilityTool = tool(
     async () => {
-      console.log(`[Tool] checkAvailability called`);
+      logger.info(`[Tool] checkAvailability called`);
       return "Mihir is currently open to new opportunities and available for interviews Monday through Friday between 10:00 AM and 6:00 PM IST.";
     },
     {
@@ -236,7 +236,7 @@ export default async function handler(req, res) {
     }
 
     if (!process.env.GROQ_API_KEY) {
-      console.warn('GROQ_API_KEY not set — using rule-based fallback');
+      logger.warn('GROQ_API_KEY not set — using rule-based fallback');
       res.status(200).json({ reply: '', useRuleBased: true, error: 'API not configured' });
       return;
     }
@@ -253,7 +253,7 @@ export default async function handler(req, res) {
       messages: [...formattedHistory, app.formatHumanMessage(sanitized)]
     };
     
-    console.log(`[Agent] Starting execution for query: "${sanitized}"`);
+    logger.info(`[Agent] Starting execution for query: "${sanitized}"`);
 
     // --- Streaming path (SSE) ---
     if (useStream) {
@@ -295,7 +295,7 @@ export default async function handler(req, res) {
         res.write(sseEvent('done', { source: 'api' }));
       } catch (error) {
         hasError = true;
-        console.error('[Agent] Stream error:', error.message);
+        logger.error('Agent stream error:', error.message);
         res.write(sseEvent('error', { error: error.message, useRuleBased: true }));
       }
 
@@ -311,7 +311,7 @@ export default async function handler(req, res) {
     res.status(200).json({ reply: validated, useRuleBased: false, source: 'api', error: null });
 
   } catch (error) {
-    console.error('Chat API error:', error);
+    logger.error('Chat API error:', error);
     res.status(500).json({ reply: '', useRuleBased: true, error: error.message });
   }
 }

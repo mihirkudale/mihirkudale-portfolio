@@ -1,67 +1,64 @@
 /**
- * Vercel Serverless Function: Text-to-Speech (TTS) using gTTS
- *
- * This endpoint accepts a POST request with a text payload
- * and returns an MP3 audio stream of the spoken text.
+ * Vercel Serverless Function: Text-to-Speech
+ * Uses google-tts-api (no deprecated 'request' dependency).
  */
+import googleTTS from 'google-tts-api';
+import { isRateLimited } from './lib/rateLimit.js';
+import { logger } from './lib/logger.js';
 
-import gTTS from 'gtts';
-
-// CommonJS style export which works better for local development via Vite/Vercel proxy
 export default async function handler(req, res) {
-    // CORS Configuration
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGIN || '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', process.env.ALLOWED_ORIGIN || '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-    // Handle preflight OPTIONS request
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
+  if (req.method === 'OPTIONS') { res.status(200).end(); return; }
+  if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
+
+  const clientId = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
+  if (await isRateLimited(clientId)) {
+    res.status(429).json({ error: 'Rate limit exceeded' });
+    return;
+  }
+
+  try {
+    const { text } = req.body;
+
+    if (!text || typeof text !== 'string') {
+      res.status(400).json({ error: 'Invalid text provided' });
+      return;
     }
 
-    // Only allow POST requests
-    if (req.method !== 'POST') {
-        res.status(405).json({ error: 'Method not allowed' });
-        return;
+    const sanitizedText = text.trim().slice(0, 4000);
+
+    // Split long text into segments — each Google TTS URL has a ~200 char limit
+    const segments = googleTTS.getAllAudioUrls(sanitizedText, {
+      lang: 'en',
+      slow: false,
+      splitPunct: ',.!?',
+    });
+
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'no-cache');
+
+    // Fetch each segment and stream concatenated MP3 to response
+    for (const { url } of segments) {
+      const audioRes = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PortfolioTTS/1.0)' },
+        signal: AbortSignal.timeout(10000),
+      });
+      if (!audioRes.ok) throw new Error(`TTS segment fetch failed: ${audioRes.status}`);
+      const buffer = await audioRes.arrayBuffer();
+      res.write(Buffer.from(buffer));
     }
 
-    try {
-        const { text } = req.body;
-
-        if (!text || typeof text !== 'string') {
-            res.status(400).json({ error: 'Invalid text provided' });
-            return;
-        }
-
-        // Limit text length to prevent abuse or timeout
-        const sanitizedText = text.trim().slice(0, 4000);
-
-        // Set appropriate headers for streaming audio
-        res.setHeader('Content-Type', 'audio/mpeg');
-        res.setHeader('Cache-Control', 'no-cache');
-        res.setHeader('Connection', 'close'); // Not SSE, just a single stream
-
-        // Create a new gTTS instance
-        // We use English ('en')
-        const gtts = new gTTS(sanitizedText, 'en');
-
-        // Stream the audio directly to the Vercel response object
-        gtts.stream().pipe(res);
-
-        // Handle potential streaming errors
-        gtts.stream().on('error', (err) => {
-            console.error('[TTS] Streaming error:', err);
-            if (!res.headersSent) {
-                res.status(500).json({ error: 'Failed to generate audio stream' });
-            }
-        });
-
-    } catch (error) {
-        console.error('[TTS] Handler error:', error);
-        if (!res.headersSent) {
-            res.status(500).json({ error: error.message || 'Internal server error during TTS payload processing' });
-        }
+    res.end();
+  } catch (error) {
+    logger.error('TTS handler error', { error: error.message });
+    if (!res.headersSent) {
+      res.status(500).json({ error: error.message || 'Internal server error' });
+    } else {
+      res.end();
     }
+  }
 }
